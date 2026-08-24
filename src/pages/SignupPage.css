@@ -258,6 +258,24 @@
   cursor: pointer;
 }
 
+.signup-form__action-row > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.signup-form__action-row > button.is-complete {
+  color: #16875f;
+  border-color: #b9e8d5;
+  background: #edf9f4;
+  opacity: 1;
+}
+
+.signup-form__verification-field input:disabled {
+  color: #6b7280;
+  background: #f7f8fa;
+  cursor: not-allowed;
+}
+
 .signup-form fieldset > small,
 .signup-form__verification-meta,
 .signup-form__password-rules {
