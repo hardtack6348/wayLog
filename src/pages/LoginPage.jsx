@@ -25,25 +25,63 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [rememberLogin, setRememberLogin] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const handleSubmit = event => {
+  const authApi = {
+    login: async ({ email, password }) => {
+      const res = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 쿠키를 포함하여 요청
+        body: JSON.stringify({ email, password, rememberLogin }),
+      })
+      
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const error = new Error(data.message || '로그인에 실패했습니다.')
+        error.status = res.status
+        throw error
+      }
+      return data
+    },
+  }
+
+  const authStore = {
+    setMember: member => {
+      sessionStorage.setItem('member', JSON.stringify(member))
+    },
+  }
+
+  const handleSubmit =  async event => {
     event.preventDefault()
+     setIsLoading(true)
+     setErrorMessage('') // 이전 오류 메시지를 초기화합니다.
 
-    /*
-     * 연결 예시:
-     * setIsLoading(true)
-     * try {
-     *   const response = await authApi.login({ email, password })
-     *   authStore.setMember(response.member)
-     *   window.location.href = '/'
-     * } catch (error) {
-     *   // 401: 이메일 또는 비밀번호 불일치
-     *   // 423: 잠긴 계정, 500: 서버 오류 등으로 메시지를 구분합니다.
-     * } finally {
-     *   setIsLoading(false)
-     * }
-     * rememberLogin은 서버의 refresh cookie 만료 기간 결정 값으로 함께 전달할 수 있습니다.
-     */
+     try {
+       const response = await authApi.login({ email, password })
+
+       if (!response.member) {
+        throw new Error('응답에 회원 정보가 없습니다.')
+       }
+       
+       authStore.setMember(response.member)
+       window.location.href = '/'
+     } catch (error) {
+        if (error.status === 401) {
+          setErrorMessage('이메일 또는 비밀번호가 올바르지 않습니다.')
+        } else if (error.status === 423) {
+          setErrorMessage('잠긴 계정입니다.')
+        } else if (error.status === 404) {
+          setErrorMessage('로그인 API 주소를 찾을 수 없습니다.')
+        } else {
+          setErrorMessage('서버 오류가 발생했습니다.')
+        }
+      } finally {
+        setIsLoading(false)
+      }
+
+
   }
 
   return (
@@ -125,7 +163,17 @@ export default function LoginPage() {
               <a href="/forgot-password">비밀번호 찾기</a>
             </div>
 
-            <button className="login-form__submit" type="submit">로그인</button>
+            {errorMessage && (
+              <p className="login-form__error" role="alert">{errorMessage}</p>
+            )}
+
+            <button
+              className="login-form__submit"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? '로그인 중...' : '로그인'}
+            </button>
           </form>
 
           <div className="login-page__divider"><span>또는</span></div>
