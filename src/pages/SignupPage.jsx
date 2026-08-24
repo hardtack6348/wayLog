@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import logo from '../assets/figma/logo.png'
 import signupBackground from '../assets/auth/login-background.png'
 import mailIcon from '../assets/auth/mail.svg'
@@ -41,11 +41,37 @@ export default function SignupPage() {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState(initialForm)
   const [terms, setTerms] = useState(initialTerms)
-  const [emailChecked, setEmailChecked] = useState(false)
-  const [emailVerified, setEmailVerified] = useState(false)
+  const [emailChecked, setEmailChecked] = useState(false) // 이메일 중복확인 완료 여부
+  const [verificationSent, setVerificationSent] = useState(false) // 인증번호 발송 상태 추가
+  const [emailVerified, setEmailVerified] = useState(false) // 인증번호 확인 완료 여부
+  const [verificationSecondsLeft, setVerificationSecondsLeft] = useState(0) // 인증번호 남은 시간 (초)
+  const [emailVerificationToken, setEmailVerificationToken] = useState('') // 서버에서 발급한 이메일 인증 토큰 (백엔드 API 연결 시 사용해야함)
   const [nicknameChecked, setNicknameChecked] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+
+
+  // 인증번호 타이머 추가
+  useEffect(() => {
+    if (!verificationSent || emailVerified) {
+      return undefined
+    }
+
+    const timerId = window.setInterval(() => {
+      setVerificationSecondsLeft(current =>
+        Math.max(current - 1, 0)
+      )
+    }, 1000)
+
+    return () => {
+      window.clearInterval(timerId)
+    }
+  }, [verificationSent, emailVerified])
+
+  const verificationMinutes = Math.floor(verificationSecondsLeft / 60)
+  const verificationSeconds = verificationSecondsLeft % 60
+  const verificationTimeText = `${verificationMinutes.toString().padStart(2, '0')}:${verificationSeconds.toString().padStart(2, '0')}`
+
 
   const passwordRules = {
     // 서버의 비밀번호 정책과 반드시 같은 정규식/조건을 사용해야 합니다.
@@ -66,12 +92,21 @@ export default function SignupPage() {
   const updateForm = event => {
     // 이메일이나 닉네임이 수정되면 이전 중복확인 결과를 무효화합니다.
     const { name, value } = event.target
-    setForm(current => ({ ...current, [name]: value }))
 
     if (name === 'email') {
+      setForm(current => ({ ...current, email: value, verificationCode: '', }))
+
       setEmailChecked(false)
+      setVerificationSent(false)
       setEmailVerified(false)
+      return
     }
+
+    setForm(current => ({
+      ...current,
+      [name]: value,
+    }))
+
     if (name === 'nickname') setNicknameChecked(false)
   }
 
@@ -82,31 +117,148 @@ export default function SignupPage() {
       return
     }
 
-    /*
-     * 백엔드 연결 시 먼저 check-email을 호출하고 available=true인 경우에만
-     * email-verifications 발송 API를 호출합니다. 409 응답이면 중복 이메일 메시지를 표시합니다.
-     * 발송 성공 후 emailChecked=true로 바꾸고 서버가 준 expiresIn으로 타이머를 시작합니다.
+    try {
+      /*
+     * 실제 백엔드 연결 예시
+     *
+     * const response = await fetch(
+     *   `/api/v1/members/check-email?email=${encodeURIComponent(form.email)}`
+     * )
+     *
+     * if (!response.ok) {
+     *   throw new Error('이메일 중복확인에 실패했습니다.')
+     * }
+     *
+     * const data = await response.json()
+     *
+     * if (!data.available) {
+     *   window.alert('이미 사용 중인 이메일입니다.')
+     *   return
+     * }
      */
-    setEmailChecked(true)
-    setEmailVerified(false)
+      setEmailChecked(true) // 이메일 중복확인 완료 상태 설정
+      setVerificationSent(false) // 인증번호 발송 상태 초기화
+      setEmailVerified(false) // 인증번호 확인 상태 초기화
+
+      window.alert('사용 가능한 이메일입니다.');
+    } catch (error) {
+      window.alert(error.message || '이메일 중복확인 중 문제가 발생했습니다.')
+    }
+   
   }
 
-  const verifyEmail = () => {
+  // 인증번호 발송 함수 추가
+  const sendVerificationCode = async () => {
     if (!emailChecked) {
       window.alert('먼저 이메일 중복 확인을 진행해 주세요.')
       return
     }
+
+    try {
+      /*
+     * 실제 백엔드 연결 예시
+     *
+     * const response = await fetch(
+     *   '/api/v1/auth/email-verifications',
+     *   {
+     *     method: 'POST',
+     *     headers: {
+     *       'Content-Type': 'application/json',
+     *     },
+     *     body: JSON.stringify({
+     *       email: form.email,
+     *       purpose: 'SIGNUP',
+     *     }),
+     *   }
+     * )
+     *
+     * if (!response.ok) {
+     *   throw new Error('인증번호 발송에 실패했습니다.')
+     * }
+     */
+
+      setVerificationSent(true) // 인증번호 발송 상태 설정
+      setEmailVerified(false) // 인증번호 확인 상태 초기화
+      setEmailVerificationToken('') // 인증 토큰 초기화
+      
+      // 3분 설정
+      setVerificationSecondsLeft(180)
+
+             /*
+        * 서버에서 유효시간을 내려준다면 다음처럼 사용합니다.
+        *
+        * setVerificationSecondsLeft(data.expiresIn)
+     */
+
+      setForm(current => ({
+        ...current,
+        verificationCode: '', // 인증번호 입력 필드 초기화
+      }))
+      window.alert('인증번호를 발송했습니다.')
+    } catch (error) {
+      window.alert(error.message || '인증번호 발송 중 문제가 발생했습니다.')
+    }
+  }
+
+  const verifyEmail = () => {
+    if (!emailChecked || !emailVerified || !emailVerificationToken) {
+      window.alert('이메일 중복 확인과 인증을 완료해 주세요.')
+      return
+    }
+
+    // 인증번호 발송 여부를 모두 검사하도록 변경
+    if (!verificationSent) {
+      window.alert('먼저 인증번호를 받아 주세요.')
+      return
+    }
+
+    if (verificationSecondsLeft <= 0) {
+      window.alert('인증번호가 만료되었습니다. 다시 받아 주세요.')
+      return
+    }
+
     if (!/^\d{6}$/.test(form.verificationCode)) {
       window.alert('인증번호 6자리를 입력해 주세요.')
       return
     }
 
-    /*
-     * POST /api/v1/auth/email-verifications/confirm 요청으로 email과 code를 전송합니다.
-     * 성공 시 서버가 발급한 verificationToken을 state에 보관했다가 최종 가입 요청에 포함하면
-     * 단순 boolean 조작으로 인증을 우회하는 문제를 막을 수 있습니다.
+    try {
+      /*
+     * 실제 백엔드 연결 예시
+     *
+     * const response = await fetch(
+     *   '/api/v1/auth/email-verifications/confirm',
+     *   {
+     *     method: 'POST',
+     *     headers: {
+     *       'Content-Type': 'application/json',
+     *     },
+     *     body: JSON.stringify({
+     *       email: form.email,
+     *       code: form.verificationCode,
+     *       purpose: 'SIGNUP',
+     *     }),
+     *   }
+     * )
+     *
+     * if (!response.ok) {
+     *   throw new Error('인증번호가 올바르지 않거나 만료되었습니다.')
+     * }
+     *
+     * const data = await response.json()
+     * setEmailVerificationToken(data.verificationToken)
      */
-    setEmailVerified(true)
+  
+
+      setEmailVerified(true) // 인증번호 확인 완료 상태 설정
+      setVerificationSecondsLeft(0) // 인증번호 남은 시간 초기화
+      window.alert('이메일 인증이 완료되었습니다.')
+    } catch (error) {
+      setEmailVerified(false) // 인증번호 확인 실패 시 상태 초기화
+      setEmailVerificationToken('') // 인증 토큰 초기화
+
+      window.alert(error.message || '인증번호 확인에 실패했습니다.')
+    }
   }
 
   const checkNickname = () => {
@@ -165,22 +317,37 @@ export default function SignupPage() {
       return
     }
 
+    if (!emailVerificationToken) {
+      window.alert('이메일 인증 정보가 없습니다.')
+      setStep(1)
+      return
+    }
+
     /*
-     * POST /api/v1/members body 예시
-     * {
-     *   email: form.email,
-     *   emailVerificationToken,
-     *   password: form.password,
-     *   phoneNumber: `${form.phonePrefix}${form.phone}`,
-     *   nickname: form.nickname,
-     *   agreements: { service: true, privacy: true, marketing: terms.marketing }
-     * }
-     *
-     * 서버 응답 처리 권장:
-     * - 201: 완료 알림 후 /login 이동
-     * - 400: 필드 검증 메시지 표시
-     * - 409: 이메일/닉네임 중복확인을 다시 요청
-     * - 410: 이메일 인증 만료 안내 후 재발송
+     * const requestBody = {
+    email: form.email,
+    emailVerificationToken,
+    password: form.password,
+    phoneNumber: `${form.phonePrefix}${form.phone}`,
+    nickname: form.nickname,
+    agreements: {
+      service: terms.service,
+      privacy: terms.privacy,
+      marketing: terms.marketing,
+    },
+  }
+
+  const response = await fetch('/api/v1/members', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  })
+
+  if (!response.ok) {
+    throw new Error('회원가입에 실패했습니다.')
+  }
      */
     window.alert('회원가입이 완료되었습니다. 로그인해 주세요.')
     window.location.href = '/login'
@@ -237,22 +404,79 @@ export default function SignupPage() {
               <small>로그인 시 사용할 이메일 주소입니다.</small>
             </fieldset>
 
+            {/* 인증번호 영역 버튼 변경 */}
             <fieldset>
               <legend>인증번호</legend>
-              <div className="signup-form__action-row">
-                <div className="signup-form__field signup-form__verification-field">
-                  <input name="verificationCode" inputMode="numeric" maxLength="6" value={form.verificationCode} onChange={updateForm} placeholder="인증번호 6자리" />
-                  {emailChecked && !emailVerified && <span>02:58</span>}
+                <div className="signup-form__action-row">
+                  <div className="signup-form__field signup-form__verification-field">
+                    <input
+                      name="verificationCode"
+                      inputMode="numeric"
+                      maxLength="6"
+                      value={form.verificationCode}
+                      onChange={updateForm}
+                      placeholder={
+                        emailChecked
+                          ? '인증번호 6자리'
+                          : '이메일 중복 확인을 먼저 진행해 주세요'
+                      }
+                      disabled={!verificationSent || emailVerified}
+                    />
+
+                    {verificationSent && !emailVerified && (
+                      <span>{verificationTimeText}</span>
+                    )}
+                  </div>
+
+                  {!verificationSent && !emailVerified && (
+                    <button
+                      type="button"
+                      onClick={sendVerificationCode}
+                      disabled={!emailChecked}
+                    >
+                      인증번호 받기
+                    </button>
+                  )}
+
+                  {verificationSent && !emailVerified && (
+                    <button
+                      type="button"
+                      onClick={verifyEmail}
+                    >
+                      인증 확인
+                    </button>
+                  )}
+
+                  {emailVerified && (
+                    <button
+                      type="button"
+                      disabled
+                      className="is-complete"
+                    >
+                      인증 완료
+                    </button>
+                  )}
                 </div>
-                <button type="button" onClick={verifyEmail}>인증 확인</button>
-              </div>
-              {emailVerified && (
-                <div className="signup-form__verification-meta">
-                  <button type="button" onClick={checkEmail}>인증번호 재발송</button>
-                  <strong>이메일 인증이 완료되었습니다.</strong>
-                </div>
-              )}
-            </fieldset>
+
+                {verificationSent && !emailVerified && (
+                  <div className="signup-form__verification-meta">
+                    <button
+                      type="button"
+                      onClick={sendVerificationCode}
+                    >
+                      인증번호 재발송
+                    </button>
+
+                    <small>이메일로 전송된 인증번호를 입력해 주세요.</small>
+                  </div>
+                )}
+
+                {emailVerified && (
+                  <div className="signup-form__verification-meta">
+                    <strong>이메일 인증이 완료되었습니다.</strong>
+                  </div>
+                )}
+              </fieldset>
 
             <fieldset>
               <legend>비밀번호</legend>
