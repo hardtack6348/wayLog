@@ -75,6 +75,7 @@ export default function LoginPage() {
         } else if (error.status === 404) {
           setErrorMessage('로그인 API 주소를 찾을 수 없습니다.')
         } else {
+          console.log(error);
           setErrorMessage('서버 오류가 발생했습니다.')
         }
       } finally {

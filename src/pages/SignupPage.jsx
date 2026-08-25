@@ -45,7 +45,7 @@ export default function SignupPage() {
   const [verificationSent, setVerificationSent] = useState(false) // 인증번호 발송 상태 추가
   const [emailVerified, setEmailVerified] = useState(false) // 인증번호 확인 완료 여부
   const [verificationSecondsLeft, setVerificationSecondsLeft] = useState(0) // 인증번호 남은 시간 (초)
-  const [emailVerificationToken, setEmailVerificationToken] = useState('') // 서버에서 발급한 이메일 인증 토큰 (백엔드 API 연결 시 사용해야함)
+  // const [emailVerificationToken, setEmailVerificationToken] = useState('') // 서버에서 발급한 이메일 인증 토큰 (백엔드 API 연결 시 사용해야함)
   const [nicknameChecked, setNicknameChecked] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
@@ -110,7 +110,7 @@ export default function SignupPage() {
     if (name === 'nickname') setNicknameChecked(false)
   }
 
-  const checkEmail = () => {
+  const checkEmail = async () => {
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
     if (!emailValid) {
       window.alert('올바른 이메일 주소를 입력해 주세요.')
@@ -118,24 +118,21 @@ export default function SignupPage() {
     }
 
     try {
-      /*
-     * 실제 백엔드 연결 예시
-     *
-     * const response = await fetch(
-     *   `/api/v1/members/check-email?email=${encodeURIComponent(form.email)}`
-     * )
-     *
-     * if (!response.ok) {
-     *   throw new Error('이메일 중복확인에 실패했습니다.')
-     * }
-     *
-     * const data = await response.json()
-     *
-     * if (!data.available) {
-     *   window.alert('이미 사용 중인 이메일입니다.')
-     *   return
-     * }
-     */
+     const response = await fetch(
+        `/api/v1/users/check-email?email=${encodeURIComponent(form.email)}`
+      )
+     
+      if (!response.ok) {
+        throw new Error('이메일 중복확인에 실패했습니다.')
+      }
+     
+      const data = await response.json()
+     
+      if (data.email!==null) {
+        window.alert('이미 사용 중인 이메일입니다.')
+        return
+      }
+     
       setEmailChecked(true) // 이메일 중복확인 완료 상태 설정
       setVerificationSent(false) // 인증번호 발송 상태 초기화
       setEmailVerified(false) // 인증번호 확인 상태 초기화
@@ -157,29 +154,30 @@ export default function SignupPage() {
     try {
       /*
      * 실제 백엔드 연결 예시
-     *
-     * const response = await fetch(
-     *   '/api/v1/auth/email-verifications',
-     *   {
-     *     method: 'POST',
-     *     headers: {
-     *       'Content-Type': 'application/json',
-     *     },
-     *     body: JSON.stringify({
-     *       email: form.email,
-     *       purpose: 'SIGNUP',
-     *     }),
-     *   }
-     * )
-     *
-     * if (!response.ok) {
-     *   throw new Error('인증번호 발송에 실패했습니다.')
-     * }
-     */
+      */
+    
+     const response = await fetch(
+       '/api/v1/auth/email-verification',
+       {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         credentials:'include',
+         body: JSON.stringify({
+           email: form.email,
+           purpose: 'SIGNUP',
+         }),
+       }
+     )
+     console.log(response);
+     if (!response.ok) {
+       throw new Error('인증번호 발송에 실패했습니다.')
+     }
 
       setVerificationSent(true) // 인증번호 발송 상태 설정
       setEmailVerified(false) // 인증번호 확인 상태 초기화
-      setEmailVerificationToken('') // 인증 토큰 초기화
+      // setEmailVerificationToken('') // 인증 토큰 초기화
       
       // 3분 설정
       setVerificationSecondsLeft(180)
@@ -195,17 +193,24 @@ export default function SignupPage() {
         verificationCode: '', // 인증번호 입력 필드 초기화
       }))
       window.alert('인증번호를 발송했습니다.')
+       window.alert("emailChecked : " + emailChecked)
+      window.alert("emailVerified : " + emailVerified)
     } catch (error) {
       window.alert(error.message || '인증번호 발송 중 문제가 발생했습니다.')
     }
   }
 
-  const verifyEmail = () => {
-    if (!emailChecked || !emailVerified || !emailVerificationToken) {
-      window.alert('이메일 중복 확인과 인증을 완료해 주세요.')
-      return
-    }
-
+  const verifyEmail = async() => {
+    // if (!emailChecked || !emailVerified || !emailVerificationToken) {
+    // if (emailChecked || emailVerified) {
+    //   window.alert('이메일 중복 확인과 인증을 완료해 주세요.')
+    //   window.alert(emailChecked)
+    //   window.alert(emailVerified)
+    //   return
+    // }
+    if (!emailChecked) {
+      window.alert("먼저 이메일 중복확인을 진행해야합니다")
+      return}
     // 인증번호 발송 여부를 모두 검사하도록 변경
     if (!verificationSent) {
       window.alert('먼저 인증번호를 받아 주세요.')
@@ -224,38 +229,45 @@ export default function SignupPage() {
 
     try {
       /*
-     * 실제 백엔드 연결 예시
-     *
-     * const response = await fetch(
-     *   '/api/v1/auth/email-verifications/confirm',
-     *   {
-     *     method: 'POST',
-     *     headers: {
-     *       'Content-Type': 'application/json',
-     *     },
-     *     body: JSON.stringify({
-     *       email: form.email,
-     *       code: form.verificationCode,
-     *       purpose: 'SIGNUP',
-     *     }),
-     *   }
-     * )
-     *
-     * if (!response.ok) {
-     *   throw new Error('인증번호가 올바르지 않거나 만료되었습니다.')
-     * }
-     *
-     * const data = await response.json()
-     * setEmailVerificationToken(data.verificationToken)
-     */
+      * 실제 백엔드 연결 예시
+      */
+    
+     const response = await fetch(
+       '/api/v1/auth/email-verification/confirm',
+       {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({
+           email: form.email,
+           authCode: form.verificationCode,
+           purpose: 'SIGNUP',
+         }),
+       }
+     )
+     const data1 = await response.json().catch(()=>({}))
+    //  console.log("이메일 인증 응답 : ",JSON.stringify(data1, null, 2))
+    
+     if (!response.ok) {
+       throw new Error('인증번호가 올바르지 않거나 만료되었습니다.')
+     }
+
+    //  if (data1.verified !== true){
+    //   throw new Error("서버 응답에 이메일 인증 토큰이 없습니다") 
+    //  }
+    
+
+    //  setEmailVerificationToken(data1.verificationToken)
   
 
       setEmailVerified(true) // 인증번호 확인 완료 상태 설정
+      console.log("emailVerified : "+emailVerified)
       setVerificationSecondsLeft(0) // 인증번호 남은 시간 초기화
       window.alert('이메일 인증이 완료되었습니다.')
     } catch (error) {
       setEmailVerified(false) // 인증번호 확인 실패 시 상태 초기화
-      setEmailVerificationToken('') // 인증 토큰 초기화
+      // setEmailVerificationToken('') // 인증 토큰 초기화
 
       window.alert(error.message || '인증번호 확인에 실패했습니다.')
     }
@@ -311,24 +323,24 @@ export default function SignupPage() {
     setTerms(current => ({ ...current, [name]: checked }))
   }
 
-  const completeSignup = () => {
+  const completeSignup = async() => {
     if (!terms.service || !terms.privacy) {
       window.alert('필수 약관에 모두 동의해야 회원가입을 완료할 수 있습니다.')
       return
     }
 
-    if (!emailVerificationToken) {
-      window.alert('이메일 인증 정보가 없습니다.')
-      setStep(1)
-      return
-    }
+    // if (!emailVerificationToken) {
+    //   window.alert('이메일 인증 정보가 없습니다.')
+    //   setStep(1)
+    //   return
+    // }
 
-    /*
-     * const requestBody = {
+    
+    const requestBody = {
     email: form.email,
-    emailVerificationToken,
+    // emailVerificationToken,
     password: form.password,
-    phoneNumber: `${form.phonePrefix}${form.phone}`,
+    // phoneNumber: `${form.phonePrefix}${form.phone}`,
     nickname: form.nickname,
     agreements: {
       service: terms.service,
@@ -337,7 +349,7 @@ export default function SignupPage() {
     },
   }
 
-  const response = await fetch('/api/v1/members', {
+  const response = await fetch('/api/v1/auth/signup', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -348,7 +360,7 @@ export default function SignupPage() {
   if (!response.ok) {
     throw new Error('회원가입에 실패했습니다.')
   }
-     */
+     
     window.alert('회원가입이 완료되었습니다. 로그인해 주세요.')
     window.location.href = '/login'
   }
