@@ -3,7 +3,7 @@
 .destination-hero__inner, .destination-main { width: min(1480px, calc(100% - 48px)); margin: 0 auto; }
 .destination-hero__inner { display: grid; grid-template-columns: 1fr 1.05fr; align-items: center; min-height: 600px; }
 .destination-hero__eyebrow { margin: 0 0 42px; color: #3b82f6; font-size: 28px; font-weight: 600; letter-spacing: 1.4px; }
-.destination-hero h1 { margin: 0 0 48px; font-size: clamp(52px, 5vw, 84px); line-height: 1; letter-spacing: -1.7px; }
+.destination-hero h1 { margin: 0 0 48px; font-size: clamp(52px, 5vw, 84px); font-weight: 700; line-height: 1; letter-spacing: -1.7px; }
 .destination-hero h1 + p { margin: 0 0 45px; color: #666; font-size: 30px; line-height: 1.4; }
 .destination-hero button { width: 300px; height: 80px; border: 0; border-radius: 15px; color: #fff; background: #3b82f6; font: inherit; font-size: 26px; font-weight: 600; cursor: pointer; }
 .destination-hero small { display: block; margin-top: 22px; color: #666; font-size: 18px; }
@@ -11,11 +11,12 @@
 .destination-main { padding: 105px 0 130px; }
 .destination-main > section + section { margin-top: 120px; }
 .destination-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 44px; }
-.destination-heading h2 { margin: 0 0 18px; font-size: 48px; line-height: 1.15; letter-spacing: -1px; }
+.destination-heading h2 { margin: 0 0 18px; font-size: 48px; font-weight: 700; line-height: 1.15; letter-spacing: -1px; }
 .destination-heading p { margin: 0; color: #999; font-size: 24px; }
 .destination-heading > a { flex: 0 0 auto; color: #333; font-size: 20px; text-decoration: none; }
 .destination-heading > a span { margin-left: 8px; }
 .destination-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.destination-type-grid > a { color: inherit; text-decoration: none; }
 .destination-type-grid article { position: relative; overflow: visible; border-radius: 30px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.18); transition: transform .2s ease; }
 .destination-type-grid article:hover, .region-grid article:hover, .destination-info-card:hover, .destination-course-grid article:hover, .destination-new-grid article:hover { transform: translateY(-5px); }
 .destination-type-grid article > img { display: block; width: 100%; height: 260px; border-radius: 30px 30px 0 0; object-fit: cover; }

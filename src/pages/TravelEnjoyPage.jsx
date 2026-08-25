@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import PlacePinIcon from '../components/icons/PlacePinIcon'
+import EnjoySearchModal from '../components/search/EnjoySearchModal'
 import festival from '../assets/enjoy/category-festival.png'
 import leports from '../assets/enjoy/category-leports.png'
 import food from '../assets/enjoy/category-food.png'
@@ -29,11 +31,11 @@ import './TravelEnjoyPage.css'
 
 // TourAPI 콘텐츠 유형을 사용자가 이해하기 쉬운 즐길거리 분류로 표현한 데이터입니다.
 const categories = [
-  { image: festival, icon: '🎉', title: '축제 · 행사', text: '지금 열리는 다양한 지역 행사' },
-  { image: leports, icon: '🚴', title: '레포츠', text: '몸으로 즐기는 체험과 액티비티' },
-  { image: food, icon: '🍽️', title: '음식점', text: '여행지에서 만나는 지역의 맛' },
-  { image: shopping, icon: '🛍️', title: '쇼핑', text: '전통시장과 지역 특산품' },
-  { image: stay, icon: '🛏️', title: '숙박', text: '편안하게 머물 수 있는 공간' },
+  { slug:'festivals', image: festival, icon: '🎉', title: '축제 · 행사', text: '지금 열리는 다양한 지역 행사' },
+  { slug:'leports', image: leports, icon: '🚴', title: '레포츠', text: '몸으로 즐기는 체험과 액티비티' },
+  { slug:'food', image: food, icon: '🍽️', title: '음식점', text: '여행지에서 만나는 지역의 맛' },
+  { slug:'shopping', image: shopping, icon: '🛍️', title: '쇼핑', text: '전통시장과 지역 특산품' },
+  { slug:'stay', image: stay, icon: '🛏️', title: '숙박', text: '편안하게 머물 수 있는 공간' },
 ]
 
 const weeklyNews = [
@@ -69,18 +71,20 @@ const stayCards = [
   { image: resort, title: '강릉 바다 전망 호텔', location: '강원특별자치도 강릉시', description: '동해의 일출과 탁 트인 바다 전망을 감상할 수 있는 호텔' },
 ]
 
-function SectionHeading({ title, description, link = '전체 보기' }) {
+function SectionHeading({ title, description, link = '전체 보기', href = '#more' }) {
   // 페이지 내 모든 상세 링크 문구를 '더보기 →' 형태로 통일합니다.
-  return <div className="enjoy-heading"><div><h2>{title}</h2><p>{description}</p></div>{link && <a href="#more">더보기 <span>→</span></a>}</div>
+  return <div className="enjoy-heading"><div><h2>{title}</h2><p>{description}</p></div>{link && <a href={href}>더보기 <span>→</span></a>}</div>
 }
 
-function InfoCards({ items, badge, columns = 4 }) {
+function InfoCards({ items, badge, category, columns = 4 }) {
   // 쇼핑 섹션만 columns=3을 전달하고 나머지는 기본 4열 레이아웃을 사용합니다.
-  return <div className={`enjoy-info-grid${columns === 3 ? ' enjoy-info-grid--three' : ''}`}>{items.map(item => <article className="enjoy-info-card" key={item.title}><img src={item.image} alt={item.title} /><div><span className="enjoy-info-card__badge">{badge}</span><h3>{item.title}</h3><p className="enjoy-info-card__location"><PlacePinIcon />{item.location}</p><p>{item.description}</p></div></article>)}</div>
+  return <div className={`enjoy-info-grid${columns === 3 ? ' enjoy-info-grid--three' : ''}`}>{items.map((item,index) => <a href={`/enjoy/${category}/${['seorak-hiking','hangang-kayak','jeju-horse','yangyang-surf','jeonju-bibimbap','gwangjang-food','tongyeong-kimbap','jeju-pork','busan-market','insadong','jeju-dongmun','gyeongju-hanok','jeju-resort','seoul-boutique','gangneung-hotel'][index + ({leports:0,food:4,shopping:8,stay:11}[category]||0)]}`} key={item.title}><article className="enjoy-info-card"><img src={item.image} alt={item.title} /><div><span className="enjoy-info-card__badge">{badge}</span><h3>{item.title}</h3><p className="enjoy-info-card__location"><PlacePinIcon />{item.location}</p><p>{item.description}</p></div></article></a>)}</div>
 }
 
 export default function TravelEnjoyPage() {
   // 각 배열은 추후 백엔드 TourAPI 응답으로 대체하되 카드 마크업은 그대로 재사용할 수 있습니다.
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+
   return <div className="travel-enjoy-page">
     <Header forceLight activePage="enjoy" />
     <section className="enjoy-hero">
@@ -89,7 +93,7 @@ export default function TravelEnjoyPage() {
           <p className="enjoy-hero__eyebrow">WAYLOG EXPERIENCE</p>
           <h1>여행을 더 즐겁게</h1>
           <p>축제부터 맛집, 숙소까지 여행에 필요한 정보를 둘러보세요.</p>
-          <button type="button">여행 즐길거리 검색</button>
+          <button type="button" onClick={() => setIsSearchOpen(true)}>여행 즐길거리 검색</button>
           <small>지역과 콘텐츠 유형을 선택해 검색할 수 있어요.</small>
         </div>
 
@@ -109,17 +113,18 @@ export default function TravelEnjoyPage() {
     </section>
 
     <main className="enjoy-main">
-      <section><SectionHeading title="무엇을 즐기고 싶나요?" description="여행 중 필요한 정보를 카테고리별로 빠르게 확인해 보세요." link="" /><div className="enjoy-category-grid">{categories.map(item => <article key={item.title}><img src={item.image} alt="" /><span className="enjoy-category-icon" aria-hidden="true">{item.icon}</span><div><h3>{item.title}</h3><p>{item.text}</p></div></article>)}</div></section>
+      <section><SectionHeading title="무엇을 즐기고 싶나요?" description="여행 중 필요한 정보를 카테고리별로 빠르게 확인해 보세요." link="" /><div className="enjoy-category-grid">{categories.map(item => <a href={`/enjoy/${item.slug}`} key={item.title}><article><img src={item.image} alt="" /><div><h3>{item.title}</h3><p>{item.text}</p></div></article></a>)}</div></section>
 
-      <section><SectionHeading title="이번 주 여행 소식" description="현재 진행 중이거나 곧 시작하는 축제와 행사입니다." link="관광지 더보기" /><div className="enjoy-filter-row"><button className="is-active">전체</button><button>진행 중</button><button>이번 주 시작</button><button>곧 시작</button></div><div className="enjoy-news-grid">{weeklyNews.map(item => <article key={item.title}><img src={item.image} alt={item.title} /><div><h3>{item.title}</h3><p>◷ {item.date}</p><p className="location-with-pin"><PlacePinIcon />{item.location}</p></div></article>)}</div><p className="enjoy-disclaimer">행사 일정은 현지 사정에 따라 변경될 수 있습니다.</p></section>
+      <section><SectionHeading title="이번 주 여행 소식" description="현재 진행 중이거나 곧 시작하는 축제와 행사입니다." href="/enjoy/festivals" /><div className="enjoy-filter-row"><button className="is-active">전체</button><button>진행 중</button><button>이번 주 시작</button><button>곧 시작</button></div><div className="enjoy-news-grid">{weeklyNews.map((item,index) => <a href={`/enjoy/festivals/${['busan-sea','jeju-haenyeo','seoul-culture'][index]}`} key={item.title}><article><img src={item.image} alt={item.title} /><div><h3>{item.title}</h3><p>◷ {item.date}</p><p className="location-with-pin"><PlacePinIcon />{item.location}</p></div></article></a>)}</div><p className="enjoy-disclaimer">행사 일정은 현지 사정에 따라 변경될 수 있습니다.</p></section>
 
-      <section className="enjoy-detail-section enjoy-detail-section--activity"><SectionHeading title="신나는 체험과 레포츠" description="몸으로 직접 즐기는 다양한 체험과 액티비티를 만나보세요." link="레포츠 더보기" /><InfoCards items={activityCards} badge="레포츠" /></section>
-      <section className="enjoy-detail-section enjoy-detail-section--food"><SectionHeading title="여행지에서 만나는 맛있는 순간" description="지역의 재료와 이야기가 담긴 특별한 맛을 경험해 보세요." link="음식점 더보기" /><InfoCards items={foodCards} badge="음식점" /></section>
-      <section className="enjoy-detail-section"><SectionHeading title="여행지에서 즐기는 쇼핑" description="전통시장부터 지역 특산품까지 여행의 즐거움을 담아보세요." link="쇼핑 더보기" /><InfoCards items={shoppingCards} badge="쇼핑" columns={3} /></section>
-      <section className="enjoy-detail-section enjoy-detail-section--stay"><SectionHeading title="여행의 하루를 마무리할 곳" description="지역별 숙박시설의 기본정보를 확인해 보세요." link="숙박 더보기" /><InfoCards items={stayCards} badge="숙박" /><p className="enjoy-disclaimer">실시간 객실 가격과 예약 가능 여부는 제공하지 않습니다.</p></section>
+      <section className="enjoy-detail-section enjoy-detail-section--activity"><SectionHeading title="신나는 체험과 레포츠" description="몸으로 직접 즐기는 다양한 체험과 액티비티를 만나보세요." href="/enjoy/leports" /><InfoCards items={activityCards} badge="레포츠" category="leports" /></section>
+      <section className="enjoy-detail-section enjoy-detail-section--food"><SectionHeading title="여행지에서 만나는 맛있는 순간" description="지역의 재료와 이야기가 담긴 특별한 맛을 경험해 보세요." href="/enjoy/food" /><InfoCards items={foodCards} badge="음식점" category="food" /></section>
+      <section className="enjoy-detail-section"><SectionHeading title="여행지에서 즐기는 쇼핑" description="전통시장부터 지역 특산품까지 여행의 즐거움을 담아보세요." href="/enjoy/shopping" /><InfoCards items={shoppingCards} badge="쇼핑" category="shopping" columns={3} /></section>
+      <section className="enjoy-detail-section enjoy-detail-section--stay"><SectionHeading title="여행의 하루를 마무리할 곳" description="지역별 숙박시설의 기본정보를 확인해 보세요." href="/enjoy/stay" /><InfoCards items={stayCards} badge="숙박" category="stay" /><p className="enjoy-disclaimer">실시간 객실 가격과 예약 가능 여부는 제공하지 않습니다.</p></section>
 
       <section className="enjoy-record"><img src={record} alt="여행 기록 일러스트" /><h2>여행의 순간을 기록하고, 함께 나눠요</h2><button type="button">여행 기록하기</button></section>
     </main>
     <Footer />
+    <EnjoySearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
   </div>
 }
