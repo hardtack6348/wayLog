@@ -3,6 +3,7 @@ import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import PlacePinIcon from '../components/icons/PlacePinIcon'
 import TravelSearchModal from '../components/search/TravelSearchModal'
+import { travelTypes } from '../data/travelTypes'
 import hero from '../assets/destinations/hero-illustration.png'
 import seoul from '../assets/destinations/region-seoul.png'
 import gyeonggi from '../assets/destinations/region-gyeonggi.png'
@@ -32,12 +33,9 @@ import ulleung from '../assets/destinations/new-ulleung.jpg'
 import woljeongsa from '../assets/destinations/new-woljeongsa.jpg'
 import './DestinationsPage.css'
 
-// TourAPI contentTypeId에 대응할 여행 콘텐츠 유형 미리보기입니다.
-const travelTypes = [
-  { image: attraction, icon: <PlacePinIcon size={38} />, title: '관광지', text: '자연 · 역사 · 체험 관광지' },
-  { image: cultureType, icon: '▦', title: '문화시설', text: '박물관 · 미술관 · 전시관' },
-  { image: courseType, icon: '↝', title: '여행코스', text: '순서대로 둘러보는 추천 코스' },
-]
+// 공통 여행 유형에 이 페이지에서만 사용하는 대표 이미지를 연결합니다.
+const travelTypeImages = { attraction, culture: cultureType, course: courseType }
+const travelTypeLinks = { attraction: '/destinations/attractions', culture: '/destinations/culture', course: '/destinations/courses' }
 
 // 지역 코드는 백엔드 TourAPI areaCode 응답과 연결할 예정입니다.
 const regions = [
@@ -87,7 +85,7 @@ export default function DestinationsPage() {
     <section className="destination-hero"><div className="destination-hero__inner"><div><p className="destination-hero__eyebrow">WAYLOG DESTINATION</p><h1>어디로 떠나볼까요?</h1><p>지역과 취향에 맞는 국내 여행지를 발견해 보세요.</p><button type="button" onClick={() => setIsSearchOpen(true)}>여행지 검색하기</button><small>지역 · 여행 유형 · 여행 조건을 선택해 검색할 수 있어요.</small></div><img src={hero} alt="국내 여행지 사진 일러스트" /></div></section>
 
     <main className="destination-main">
-      <section><SectionHeading title="어떤 여행지를 찾고 있나요?" description="관광지부터 문화시설, 여행코스까지 원하는 방식으로 둘러보세요." /><div className="destination-type-grid">{travelTypes.map(item => <article key={item.title}><img src={item.image} alt="" /><span>{item.icon}</span><div><h3>{item.title}</h3><p>{item.text}</p></div></article>)}</div></section>
+      <section><SectionHeading title="어떤 여행지를 찾고 있나요?" description="관광지부터 문화시설, 여행코스까지 원하는 방식으로 둘러보세요." /><div className="destination-type-grid">{travelTypes.map(item => <a href={travelTypeLinks[item.id]} key={item.id}><article><img src={travelTypeImages[item.id]} alt="" /><span aria-hidden="true">{item.icon}</span><div><h3>{item.title}</h3><p>{item.description}</p></div></article></a>)}</div></section>
 
       <section><SectionHeading title="지역별로 둘러보기" description="가고 싶은 지역을 선택해 여행지를 확인해 보세요." /><div className="region-grid">{regions.map(item => <article key={item.title}><img src={item.image} alt={`${item.title} 여행 풍경`} /><h3>{item.title}</h3></article>)}</div></section>
 

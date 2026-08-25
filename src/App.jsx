@@ -13,6 +13,12 @@ import DestinationsPage from './pages/DestinationsPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import DestinationCatalogPage from './pages/DestinationCatalogPage'
+import DestinationSearchResultsPage from './pages/DestinationSearchResultsPage'
+import TravelDetailPage from './pages/TravelDetailPage'
+import EnjoyCategoryPage from './pages/EnjoyCategoryPage'
+import EnjoyDetailPage from './pages/EnjoyDetailPage'
+import EnjoySearchResultsPage from './pages/EnjoySearchResultsPage'
 
 function App() {
   // 메인 콘텐츠가 Hero 위로 올라오는 스크롤 효과를 직접 제어하기 위한 DOM 참조입니다.
@@ -79,6 +85,35 @@ function App() {
 
   if (window.location.pathname === '/enjoy') {
     return <TravelEnjoyPage />
+  }
+
+  if (window.location.pathname === '/enjoy/search') {
+    return <EnjoySearchResultsPage />
+  }
+
+  if (window.location.pathname.startsWith('/enjoy/')) {
+    const [, , category, id] = window.location.pathname.split('/')
+    return id ? <EnjoyDetailPage category={category} id={id} /> : <EnjoyCategoryPage category={category} />
+  }
+
+  if (window.location.pathname === '/destinations/search') {
+    return <DestinationSearchResultsPage />
+  }
+
+  if (window.location.pathname.startsWith('/destinations/detail/')) {
+    return <TravelDetailPage />
+  }
+
+  if (window.location.pathname === '/destinations/attractions') {
+    return <DestinationCatalogPage kind="attraction" />
+  }
+
+  if (window.location.pathname === '/destinations/culture') {
+    return <DestinationCatalogPage kind="culture" />
+  }
+
+  if (window.location.pathname === '/destinations/courses') {
+    return <DestinationCatalogPage kind="course" />
   }
 
   if (window.location.pathname === '/destinations') {
