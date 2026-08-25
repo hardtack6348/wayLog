@@ -61,12 +61,16 @@ export default function LoginPage() {
      try {
        const response = await authApi.login({ email, password })
 
-       if (!response.member) {
+
+       if (!response.accessToken ) {
+        console.log(response);
         throw new Error('응답에 회원 정보가 없습니다.')
        }
        
        authStore.setMember(response.member)
+
        window.location.href = '/'
+
      } catch (error) {
         if (error.status === 401) {
           setErrorMessage('이메일 또는 비밀번호가 올바르지 않습니다.')
@@ -75,8 +79,8 @@ export default function LoginPage() {
         } else if (error.status === 404) {
           setErrorMessage('로그인 API 주소를 찾을 수 없습니다.')
         } else {
-          console.log(error);
           setErrorMessage('서버 오류가 발생했습니다.')
+          console.error(error);
         }
       } finally {
         setIsLoading(false)
