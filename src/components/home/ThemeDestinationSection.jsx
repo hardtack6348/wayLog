@@ -44,10 +44,20 @@ export default function ThemeDestinationSection() {
     </div>
 
     <div className={`enjoy-grid${activeFilter !== '전체' ? ' enjoy-grid--filtered' : ''}`}>
-      {filteredItems.map(item => <article className="enjoy-card" key={item.title}>
-        <img src={item.image} alt={item.title} />
-        <div><h3>{item.title}</h3><p className="location-with-pin"><PlacePinIcon />{item.location}</p></div>
-      </article>)}
+      {filteredItems.map((item) => (
+      <article className="enjoy-card" key={item.title}>
+        <a href={`/destinations/detail/${item.title}`}>
+          <img src={item.image} alt={item.title} />
+          <div>
+            <h3>{item.title}</h3>
+            <p className="location-with-pin">
+              <PlacePinIcon />
+              {item.location}
+            </p>
+          </div>
+        </a>
+      </article>
+      ))}
     </div>
   </section>
 }

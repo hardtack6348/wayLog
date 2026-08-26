@@ -85,7 +85,32 @@
   background: #fef3f2;
 }
 
+.destination-card > a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
 
+.course-card__link {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.enjoy-card > a {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.news-card > a {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
 
 
 @media (max-width: 1050px) { .enjoy-filters { grid-template-columns: repeat(3, 1fr); } .enjoy-grid { grid-template-columns: repeat(3, 1fr); } .enjoy-grid--filtered { grid-template-columns: minmax(240px, 280px); } .footer__inner { flex-direction: column; } }

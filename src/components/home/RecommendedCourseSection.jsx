@@ -14,9 +14,34 @@ const courses = [
 export default function RecommendedCourseSection() {
   // 코스별 지역·기간·경유지를 동일한 카드 구조로 반복 출력합니다.
   return <section id="courses" className="home-section course-section">
-    <div className="section-heading"><div><h2>추천 여행 코스</h2><p>여행의 시작부터 끝까지, 알찬 코스를 한눈에 확인해 보세요.</p></div><a href="#courses">코스 더보기 <span>→</span></a></div>
-    <div className="course-grid">{courses.map(course => <article className="course-card" key={course.title}>
-      <img className="course-card__image" src={course.image} alt="" /><div className="course-card__body"><div className="course-tags"><span>{course.region}</span><span>{course.duration}</span></div><h3>{course.title}</h3><p>{course.description}</p><div className="course-route"><img src={route} alt="" />{course.stops.map(stop => <small key={stop}>{stop}</small>)}</div></div>
-    </article>)}</div>
+    <div className="section-heading">
+      <div>
+        <h2>추천 여행 코스</h2>
+        <p>여행의 시작부터 끝까지, 알찬 코스를 한눈에 확인해 보세요.</p>
+      </div>
+      <a href="/destinations/courses">코스 더보기 <span>→</span></a>
+    </div>
+    <div className="course-grid">
+      {courses.map((course) => (
+      <article className="course-card" key={course.title}>
+        {/* App.jsx가 /destinations/detail/:id를 상세 페이지로 처리합니다. */}
+        <a href={`/destinations/detail/${course.title}`} className="course-card__link">
+        <img className="course-card__image" src={course.image} alt="" />
+        <div className="course-card__body">
+          <div className="course-tags">
+            <span>{course.region}</span>
+            <span>{course.duration}</span>
+          </div>
+          <h3>{course.title}</h3>
+          <p>{course.description}</p>
+          <div className="course-route">
+            <img src={route} alt="" />
+            {course.stops.map(stop => <small key={stop}>{stop}</small>)}
+          </div>
+        </div>
+      </a>
+    </article>
+      ))}
+    </div>
   </section>
 }
