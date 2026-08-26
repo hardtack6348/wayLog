@@ -63,6 +63,31 @@
 .footer__links strong { margin-bottom: 7px; color: #fff; font-size: 17px; }
 .footer__links a { color: rgba(255,255,255,.68); font-size: 14px; text-decoration: none; }
 .footer__bottom { display: flex; justify-content: space-between; gap: 20px; padding-top: 25px; border-top: 1px solid rgba(255,255,255,.15); font-size: 13px; }
+
+/*
+ * API 로딩, 빈 결과 등의 상태를 표시합니다.
+ */
+.home-section__status {
+  margin: 32px 0;
+  padding: 28px;
+  border-radius: 16px;
+  color: #666;
+  background: #f7f8fa;
+  font-size: 16px;
+  text-align: center;
+}
+
+/*
+ * API 요청 실패 상태를 표시합니다.
+ */
+.home-section__status--error {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+
+
+
 @media (max-width: 1050px) { .enjoy-filters { grid-template-columns: repeat(3, 1fr); } .enjoy-grid { grid-template-columns: repeat(3, 1fr); } .enjoy-grid--filtered { grid-template-columns: minmax(240px, 280px); } .footer__inner { flex-direction: column; } }
 @media (max-width: 760px) {
   .section-heading { align-items: flex-start; margin-bottom: 26px; } .section-heading h2 { font-size: 27px; } .section-heading p { font-size: 15px; } .section-heading > a { font-size: 14px; }
