@@ -7,7 +7,19 @@
 .destination-grid, .course-grid, .news-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; }
 .destination-card, .course-card, .news-card { overflow: hidden; border: 1px solid #e8e8e8; border-radius: 20px; background: #fff; box-shadow: 0 8px 28px rgba(20,30,40,.07); transition: transform .2s ease, box-shadow .2s ease; }
 .destination-card:hover, .course-card:hover, .news-card:hover, .enjoy-card:hover { transform: translateY(-6px); box-shadow: 0 16px 34px rgba(20,30,40,.13); }
-.destination-card > img { display: block; width: 100%; height: 260px; object-fit: cover; }
+
+/*
+ * 이미지가 카드 바로 아래에 있거나 링크 안에 있는 경우를
+ * 모두 지원합니다.
+ */
+.destination-card > img,
+.destination-card > a > img {
+  display: block;
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+}
+
 .destination-card__body { padding: 27px 28px 30px; }
 .destination-card h3, .course-card h3, .news-card h3, .enjoy-card h3 { margin: 0; color: #1f1f1f; font-size: 24px; letter-spacing: -.7px; }
 .destination-card p { margin: 14px 0 0; color: #666; font-size: 16px; line-height: 1.65; }
@@ -85,7 +97,32 @@
   background: #fef3f2;
 }
 
+.destination-card > a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
 
+.course-card__link {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.enjoy-card > a {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.news-card > a {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
 
 
 @media (max-width: 1050px) { .enjoy-filters { grid-template-columns: repeat(3, 1fr); } .enjoy-grid { grid-template-columns: repeat(3, 1fr); } .enjoy-grid--filtered { grid-template-columns: minmax(240px, 280px); } .footer__inner { flex-direction: column; } }
