@@ -49,6 +49,8 @@
 .enjoy-news-grid p { margin: 8px 0 0; color: #999; font-size: 16px; }
 .enjoy-disclaimer { display: flex; align-items: center; gap: 8px; margin: 36px 0 0; font-size: 16px; }
 .enjoy-disclaimer::before { display: inline-grid; flex: 0 0 18px; width: 18px; height: 18px; place-items: center; border: 2px solid #3b82f6; border-radius: 50%; color: #3b82f6; content: 'i'; font-size: 12px; font-weight: 700; line-height: 1; }
+.enjoy-api-status { margin: 0; padding: 42px 24px; border-radius: 14px; color: #667085; background: #f3f6f9; text-align: center; }
+.enjoy-api-status--error { color: #b42318; background: #fef3f2; }
 .enjoy-detail-section { padding-top: 20px; }
 .enjoy-detail-section--food { position: relative; padding: 90px 0; }
 .enjoy-detail-section--food::before, .enjoy-detail-section--stay::before { position: absolute; z-index: -1; top: 0; bottom: 0; left: 50%; width: 100vw; content: ''; transform: translateX(-50%); }
@@ -66,6 +68,7 @@
 .enjoy-info-card h3 { margin: 0 0 8px; font-size: 22px; }
 .enjoy-info-card p { margin: 10px 0 0; color: #777; font-size: 15px; line-height: 1.45; }
 .enjoy-info-card .enjoy-info-card__location { display: flex; align-items: center; gap: 5px; color: #999; }
+.enjoy-info-card__location { min-width: 0; }.enjoy-info-card__location span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .enjoy-info-card__location svg, .location-with-pin svg { flex: 0 0 auto; }
 .location-with-pin { display: flex; align-items: center; gap: 5px; }
 .enjoy-record { display: grid; grid-template-columns: 220px 1fr 300px; align-items: center; gap: 45px; min-height: 200px; padding: 0 66px; border-radius: 30px; color: #fff; background: #3b82f6; }

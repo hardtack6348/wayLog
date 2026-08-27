@@ -118,7 +118,7 @@ export default function WeeklyNewsSection({
                  * 제목은 중복되거나 URL에 공백과 특수문자가 포함될 수 있지만,
                  * contentId는 TourAPI 콘텐츠의 고유 식별자입니다.
                  */}
-                <a href={`/enjoy/festivals/${festival.contentId}`}>
+                <a href={`/destinations/detail/${festival.contentId}?contentTypeId=15`}>
                   <img src={festival.image || fallbackImage} 
                   alt={festival.title} 
                   onError={(event) => {

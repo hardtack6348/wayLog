@@ -9,3 +9,8 @@
 .enjoy-catalog-pagination button.active { color: #fff; background: #3b82f6; }
 .enjoy-catalog-pagination button:disabled { color: #b9c2cc; border-color: #e2e6ea; background: #f4f5f6; cursor: not-allowed; }
 .enjoy-catalog-pagination button:not(:disabled):hover { color: #fff; background: #5b94df; }
+.enjoy-catalog-result { scroll-margin-top: 110px; }
+.enjoy-catalog-status { margin: 38px 0 0; padding: 42px 24px; border-radius: 14px; color: #667085; background: #f3f6f9; text-align: center; }
+.enjoy-catalog-status--error { color: #b42318; background: #fef3f2; }
+.enjoy-catalog-grid address { min-width: 0; }
+.enjoy-catalog-grid address span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

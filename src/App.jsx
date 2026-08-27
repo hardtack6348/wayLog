@@ -14,6 +14,7 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import DestinationCatalogPage from './pages/DestinationCatalogPage'
+import RegionDestinationPage from './pages/RegionDestinationPage'
 import DestinationSearchResultsPage from './pages/DestinationSearchResultsPage'
 import TravelDetailPage from './pages/TravelDetailPage'
 import EnjoyCategoryPage from './pages/EnjoyCategoryPage'
@@ -302,6 +303,15 @@ function App() {
 
   if (window.location.pathname.startsWith('/destinations/detail/')) {
     return <TravelDetailPage />
+  }
+
+  /*
+   * 지역별 여행지 페이지입니다.
+   * URL의 마지막 권역 키를 지역 페이지로 전달합니다.
+   */
+  if (window.location.pathname.startsWith('/destinations/regions/')) {
+    const regionKey = window.location.pathname.split('/').filter(Boolean).at(-1)
+    return <RegionDestinationPage regionKey={regionKey} />
   }
 
   if (window.location.pathname === '/destinations/attractions') {

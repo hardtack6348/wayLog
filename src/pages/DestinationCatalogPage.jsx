@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import PlacePinIcon from '../components/icons/PlacePinIcon'
+import { fetchTourJson } from '../api/tourApi'
 
 /*
  * TourAPI가 이미지를 제공하지 않을 때 사용할
@@ -42,6 +43,30 @@ const configs = {
   }
 }
 
+/**
+ * GET /api/v1/regions가 아직 준비되지 않았을 때 사용하는 임시 지역 목록입니다.
+ * 백엔드 지역 API가 정상 응답하면 이 목록은 자동으로 서버 데이터로 교체됩니다.
+ */
+const fallbackRegions = [
+  { label: '전체 지역', value: '' },
+  { label: '서울', value: '11' },
+  { label: '전남·광주', value: '12' },
+  { label: '부산', value: '26' },
+  { label: '대구', value: '27' },
+  { label: '인천', value: '28' },
+  { label: '대전', value: '30' },
+  { label: '울산', value: '31' },
+  { label: '세종', value: '36110' },
+  { label: '경기', value: '41' },
+  { label: '충북', value: '43' },
+  { label: '충남', value: '44' },
+  { label: '경북', value: '47' },
+  { label: '경남', value: '48' },
+  { label: '제주', value: '50' },
+  { label: '강원', value: '51' },
+  { label: '전북', value: '52' },
+]
+
 export default function DestinationCatalogPage({ kind }) {
   
   const pageSize = 9
@@ -70,6 +95,12 @@ export default function DestinationCatalogPage({ kind }) {
 
   const [bookmarkedCards, setBookmarkedCards] = useState(() => new Set())
 
+  /** 백엔드에서 받은 최신 TourAPI 법정동 광역지역 목록입니다. */
+  const [regions, setRegions] = useState(fallbackRegions)
+
+  /** 선택한 지역의 lDongRegnCd입니다. 빈 문자열이면 전국 조회입니다. */
+  const [regionCode, setRegionCode] = useState('')
+
   const [sortOrder, setSortOrder] = useState('기본')
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -85,6 +116,41 @@ export default function DestinationCatalogPage({ kind }) {
   }
 
   const arrange = arrangeMap[sortOrder] ?? 'Q'
+
+  /**
+   * 백엔드가 TourAPI ldongCode2를 가공한 광역지역 목록을 조회합니다.
+   * 배열과 { items: [...] } 응답을 모두 지원하며, 호출 실패 시 임시 목록을 유지합니다.
+   */
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function fetchRegions() {
+      try {
+        const data = await fetchTourJson('/api/v1/regions')
+        const regionItems = Array.isArray(data) ? data : (data.items ?? [])
+        const normalizedRegions = regionItems
+          .map((region) => ({
+            value: String(region.lDongRegnCd ?? region.code ?? ''),
+            label: region.name ?? region.regionName ?? region.label ?? '',
+          }))
+          .filter((region) => region.value && region.label)
+
+        if (normalizedRegions.length > 0) {
+          setRegions([
+            { label: '전체 지역', value: '' },
+            ...normalizedRegions,
+          ])
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.info('지역 API가 준비되지 않아 임시 지역 목록을 사용합니다.')
+        }
+      }
+    }
+
+    fetchRegions()
+    return () => controller.abort()
+  }, [])
 
   /**
     * 페이지 종류, 현재 페이지 또는 정렬 기준이 바뀌면
@@ -110,17 +176,14 @@ export default function DestinationCatalogPage({ kind }) {
         arrange: String(arrange),
        })
 
-       const response = await fetch(`/api/v1/search?${params.toString()}`)
-       
-       /*
-       * fetch는 400 또는 500 응답을 자동으로
-       * 예외 처리하지 않으므로 직접 확인합니다.
-       */
-      if (!response.ok) {
-        throw new Error('여행지 목록 조회 실패: HTTP ${response.status}',)
-        }
+       // 전체 지역이 아닐 때만 법정동 광역지역 코드를 TourAPI 요청에 추가합니다.
+       if (regionCode) {
+         params.set('lDongRegnCd', regionCode)
+       }
 
-        const data = await response.json()
+       const data = await fetchTourJson(
+         `/api/v1/search?${params.toString()}`,
+       )
 
       /*
        * 컴포넌트가 화면에서 제거된 경우
@@ -160,7 +223,8 @@ export default function DestinationCatalogPage({ kind }) {
   config.contentTypeId,
   currentPage,
   pageSize,
-  arrange])
+  arrange,
+  regionCode])
 
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
@@ -277,11 +341,25 @@ export default function DestinationCatalogPage({ kind }) {
       
       <div className="catalog-toolbar">
         <div>
-          {/*
-           * 지역 필터는 lDongRegnCd 목록 API를 연결한 후 추가합니다.
-           *
-           * 현재 단계에서는 정렬 기능만 노출합니다.
-           */}
+          <label className="catalog-select">
+            <span>지역</span>
+
+            <select
+              aria-label="지역 선택"
+              value={regionCode}
+              onChange={(event) => {
+                setRegionCode(event.target.value)
+                setCurrentPage(1)
+              }}
+            >
+              {regions.map((region) => (
+                <option value={region.value} key={region.value || 'all'}>
+                  {region.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <label className="catalog-select">
             <span>정렬</span>
 

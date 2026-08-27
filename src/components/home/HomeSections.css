@@ -45,13 +45,6 @@
 .course-tags { display: flex; gap: 8px; margin-bottom: 13px; }
 .course-tags span, .news-card__badge { padding: 6px 12px; border-radius: 15px; color: #2563eb; background: #eaf2ff; font-size: 13px; font-weight: 600; }
 .course-card__body > p { min-height: 46px; margin: 11px 0 20px; color: #666; font-size: 15px; line-height: 1.55; }
-.course-route { position: relative; height: 38px; padding-top: 22px; }
-.course-route > img { position: absolute; top: 3px; left: 5%; width: 90%; height: 18px; }
-.course-route small { position: absolute; top: 22px; width: 25%; overflow: hidden; color: #555; font-size: 11px; text-align: center; text-overflow: ellipsis; white-space: nowrap; transform: translateX(-50%); }
-.course-route small:nth-of-type(1) { left: 5%; }
-.course-route small:nth-of-type(2) { left: 35%; }
-.course-route small:nth-of-type(3) { left: 65%; }
-.course-route small:nth-of-type(4) { left: 95%; }
 .enjoy-filters { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-bottom: 26px; padding-bottom: 1px; }
 .enjoy-filters button { min-height: 52px; padding: 0 18px; border: 1px solid #e2e8f0; border-radius: 14px; color: #555; background: #fff; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; transition: color .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease; }
 .enjoy-filters button:hover { color: #3b82f6; border-color: #93c5fd; background: #f8fbff; }
