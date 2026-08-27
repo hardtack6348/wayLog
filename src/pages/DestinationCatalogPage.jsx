@@ -229,7 +229,7 @@ export default function DestinationCatalogPage({ kind }) {
     goToPage(
       Math.max(
         1,
-        startPage - pagesPerGroup,
+        startPage - pagePerGroup,
       ),
     )
   }
@@ -245,7 +245,7 @@ export default function DestinationCatalogPage({ kind }) {
     goToPage(
       Math.min(
         totalPages,
-        startPage + pagesPerGroup,
+        startPage + pagePerGroup,
       ),
     )
   }
