@@ -35,7 +35,7 @@ let homeDataPromise = null;
  */
 function fetchHomeDataOnce() {
   if (!homeDataPromise) {
-    homeDataPromise = fetch('/api/home')
+    homeDataPromise = fetch('/api/v1/home')
     .then((response) => {
       /*
        * fetch는 HTTP 400 또는 500 응답을 자동으로
