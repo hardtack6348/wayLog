@@ -1,157 +1,16 @@
-import { useEffect, useState } from 'react'
 import fallbackImage from '../../assets/figma/course-jeju.png'
 import route from '../../assets/figma/course-route.svg'
 import './HomeSections.css'
 
 /**
- * 메인 페이지의 추천 여행코스 영역입니다.
- *
- * 주요 역할:
- * 1. 컴포넌트가 처음 렌더링될 때 GET /api/home을 호출합니다.
- * 2. 응답의 recommendedCourses 배열을 상태에 저장합니다.
- * 3. API 요청 진행 중에는 로딩 메시지를 표시합니다.
- * 4. 요청 실패 시 오류 메시지를 표시합니다.
- * 5. 정상적으로 받은 여행코스를 카드 형태로 렌더링합니다.
+ * 상위 HomePage가 조회한 추천 여행코스를 props로 받아 표시합니다.
  */
 
-
-export default function RecommendedCourseSection() {
-  /**
-   * 백엔드에서 받은 추천 여행코스 목록입니다.
-   *
-   * 초기값을 빈 배열로 지정하면 API 응답을 받기 전에도
-   * courses.length 또는 courses.map()을 안전하게 사용할 수 있습니다.
-   */
-  const [ courses, setCourses ] = useState([])
-
-  /**
-   * API 요청 진행 상태입니다.
-   *
-   * true:
-   * 추천 여행코스를 불러오는 중입니다.
-   *
-   * false:
-   * API 요청이 성공 또는 실패로 종료된 상태입니다.
-   */
-  const [ isLoading, setIsLoading ] = useState(true)
-
-  /**
-   * API 요청이 실패했을 때 사용자에게 표시할 메시지입니다.
-   *
-   * 빈 문자열이면 오류가 없는 상태로 간주합니다.
-   */
-  const [ errorMessage, setErrorMessage ] = useState('')
-
-  /**
-   * 컴포넌트가 화면에 처음 나타날 때 한 번 실행됩니다.
-   *
-   * 의존성 배열이 빈 배열([])이므로 렌더링될 때마다 실행되지 않고
-   * 컴포넌트 최초 마운트 시점에만 API를 호출합니다.
-   */
-
-  useEffect(() => {
-    /**
-     * 백엔드에서 메인 페이지 데이터를 조회합니다.
-     *
-     * /api/home 응답에는 다음 데이터가 함께 포함됩니다.
-     *
-     * - recommendedDestinations
-     * - recommendedCourses
-     * - enjoyItems
-     * - festivals
-     *
-     * 이 컴포넌트에서는 recommendedCourses만 사용합니다.
-     */
-    async function fetchCourses() {
-      try {
-        // 새로운 요청을 시작하므로 로딩 상태를 활성화합니다.
-        setIsLoading(true)
-
-        // 이전 요청에서 발생한 오류 메시지가 있다면 초기화합니다.
-        setErrorMessage('')
-
-        /**
-         * Vite 개발 서버의 Proxy 설정을 이용해 백엔드 API를 호출합니다.
-         *
-         * 프론트 요청:
-         * GET /api/home
-         *
-         * Vite Proxy가 전달하는 실제 백엔드 주소:
-         * http://localhost:8080/api/home
-         *
-         * 상대 경로를 사용하면 개발 환경에서 별도의 CORS 설정 없이
-         * 백엔드에 요청할 수 있습니다.
-         */
-        const response = await fetch('/api/home')
-
-        /**
-         * fetch는 HTTP 400, 404, 500, 502 등의 응답을 받아도
-         * 자동으로 catch 블록으로 이동하지 않습니다.
-         *
-         * 따라서 response.ok를 직접 검사해야 합니다.
-         *
-         * response.ok는 HTTP 상태가 200~299일 때 true입니다.
-         */
-        if (!response.ok) {
-          throw new Error(`추천 코스 조회 실패: HTTP ${response.status}`,)
-        }
-
-        /**
-         * 백엔드가 반환한 JSON 문자열을 JavaScript 객체로 변환합니다.
-         */
-        const data = await response.json()
-
-        /**
-         * HomeTourResponse의 recommendedCourses 배열을 상태에 저장합니다.
-         *
-         * 백엔드 응답 예:
-         *
-         * {
-         *   "recommendedCourses": [
-         *     {
-         *       "contentId": "12345",
-         *       "contentTypeId": "25",
-         *       "image": "https://...",
-         *       "title": "서울 역사 여행코스",
-         *       "region": "서울특별시",
-         *       "duration": "약 5시간",
-         *       "description": "역사 명소를 둘러보는 코스",
-         *       "stops": ["경복궁", "광화문", "인사동"]
-         *     }
-         *   ]
-         * }
-         *
-         * recommendedCourses가 null 또는 undefined라면
-         * 빈 배열을 상태에 저장해 렌더링 오류를 방지합니다.
-         */
-        setCourses(data.recommendedCourses ?? [])
-      } catch (error) {
-        /**
-         * 다음과 같은 문제가 발생하면 이 블록이 실행됩니다.
-         *
-         * - 백엔드 서버가 실행되지 않음
-         * - HTTP 400/500/502 응답
-         * - 네트워크 연결 실패
-         * - JSON 변환 실패
-         */
-        console.error('추천 여행코스 조회 중 오류가 발생했습니다.', error,)
-
-        // 사용자 화면에는 내부 오류 대신 이해하기 쉬원 메시지를 표시합니다.
-        setErrorMessage('추천 여행코스를 불러오지 못했습니다.',)
-      } finally {
-        /**
-         * 요청 성공 여부와 관계없이 로딩 상태를 종료합니다.
-         *
-         * finally는 try 또는 catch가 끝난 후 항상 실행됩니다.
-         */
-        setIsLoading(false)
-      }
-    }
-
-    // 위에서 선언한 비동기 API 호출 함수를 실행합니다.
-    fetchCourses()
-  }, [])
-
+export default function RecommendedCourseSection({
+  courses = [],
+  isLoading,
+  errorMessage,
+}) {
   return (
   <section id="courses" className="home-section course-section">
     {/* 추천 여행코스 영역의 제목과 안내 문구입니다. */}
@@ -262,12 +121,12 @@ export default function RecommendedCourseSection() {
                          * TourAPI에 소요시간이 없으면
                          * 기본 안내 문구를 표시합니다.
                          */}
-                        {course.duration || '일정 정보 없음'}
+                        {course.duration || '상세 일정 확인'}
                       </span>
                     </div>
 
                     {/* areaBasedList2에서 받은 여행코스 제목입니다. */}
-                    <h3>
+                    <h3 title={course.title || '여행코스 제목 없음'}>
                       {course.title || '여행코스 제목 없음'}
                     </h3>
 
