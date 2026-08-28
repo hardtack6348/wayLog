@@ -49,10 +49,10 @@ function HeroSection() {
           <div className="hero-section__quick-links" aria-label="빠른 여행 테마">
             {/* 현재 실제로 구현된 페이지 범위 안에서만 이동하도록 링크를 구성했습니다. */}
             <a href="/destinations"><PlacePinIcon />추천 여행지</a>
-            <a href="/enjoy">✦ 여행 즐기기</a>
-            <a href="/destinations">≋ 바다 여행</a>
-            <a href="/destinations">♧ 가족 여행</a>
-            <a href="/enjoy">⌂ 감성 숙소</a>
+            <a href="/enjoy">🏞 여행 즐기기</a>
+            <a href="/destinations">⛱ 바다 여행</a>  
+            <a href="/destinations">🏘 가족 여행</a>
+            <a href="/enjoy">🏕 감성 숙소</a>
           </div>
         </div>
       </div>

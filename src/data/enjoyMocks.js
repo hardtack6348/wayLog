@@ -23,7 +23,7 @@ import resort from '../assets/enjoy/stay-resort.jpg'
 import hanok from '../assets/enjoy/stay-hanok.jpg'
 
 export const enjoyConfigs = {
-  festivals: { title: '축제 · 행사', icon: '🎉', cover: festivalCover, description: '계절마다 펼쳐지는 지역의 축제와 특별한 행사를 만나보세요.', items: [
+  festivals: { title: '축제 · 행사', icon: '🎏', cover: festivalCover, description: '계절마다 펼쳐지는 지역의 축제와 특별한 행사를 만나보세요.', items: [
     { id:'busan-sea', image:newsBusan, title:'부산 바다축제', location:'부산광역시 해운대구', description:'부산의 여름 바다에서 공연과 체험을 함께 즐기는 대표 축제', meta:'2025.05.10 ~ 05.18' },
     { id:'jeju-haenyeo', image:newsJeju, title:'제주 해녀축제', location:'제주특별자치도 제주시', description:'제주 해녀 문화의 가치와 이야기를 만나는 지역 문화축제', meta:'2025.05.15 ~ 05.18' },
     { id:'seoul-culture', image:newsSeoul, title:'서울 문화행사', location:'서울특별시 종로구', description:'도심의 역사 공간에서 공연과 전시를 즐기는 문화행사', meta:'2025.05.20 ~ 05.24' },
