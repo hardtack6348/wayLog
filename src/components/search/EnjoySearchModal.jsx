@@ -6,11 +6,11 @@ import './EnjoySearchModal.css'
 const regions = ['전체']
 
 const enjoyTypes = [
-  { id: 'festival', icon: '🎉', title: '축제 · 행사' },
-  { id: 'leports', icon: '🚴', title: '레포츠' },
-  { id: 'food', icon: '🍽️', title: '음식점' },
-  { id: 'shopping', icon: '🛍️', title: '쇼핑' },
-  { id: 'stay', icon: '🛏️', title: '숙박' },
+  { id: 'festival', icon: '☘', title: '축제 · 행사' },
+  { id: 'leports', icon: '⛸', title: '레포츠' },
+  { id: 'food', icon: '🍽', title: '음식점' },
+  { id: 'shopping', icon: '🛍', title: '쇼핑' },
+  { id: 'stay', icon: '🛏', title: '숙박' },
 ]
 
 export default function EnjoySearchModal({ isOpen, onClose }) {
