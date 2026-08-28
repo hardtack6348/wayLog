@@ -128,9 +128,9 @@ export default function TravelEnjoyPage() {
           <img className="enjoy-collage__photo enjoy-collage__photo--shopping" src={shopping} alt="여행지의 쇼핑 거리" />
           <img className="enjoy-collage__photo enjoy-collage__photo--stay" src={stay} alt="바다 전망 숙소" />
           <img className="enjoy-collage__photo enjoy-collage__photo--food" src={food} alt="여행지의 지역 음식" />
-          <span className="enjoy-collage__icon enjoy-collage__icon--pin" aria-hidden="true">●</span>
-          <span className="enjoy-collage__icon enjoy-collage__icon--camera" aria-hidden="true">▣</span>
-          <span className="enjoy-collage__icon enjoy-collage__icon--ticket" aria-hidden="true">✦</span>
+          <span className="enjoy-collage__icon enjoy-collage__icon--pin" aria-hidden="true">🏖</span>
+          <span className="enjoy-collage__icon enjoy-collage__icon--camera" aria-hidden="true">🏟</span>
+          <span className="enjoy-collage__icon enjoy-collage__icon--ticket" aria-hidden="true">❤</span>
           <span className="enjoy-collage__route" aria-hidden="true" />
         </div>
       </div>
