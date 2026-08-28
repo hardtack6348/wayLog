@@ -275,7 +275,6 @@ export default function EnjoyCategoryPage({ category }) {
                       <div>
                         <small>TourAPI</small>
                         <h2>{item.title || '이름 정보 없음'}</h2>
-                        <p>{config.description}</p>
                         <address title={item.address || '주소 정보 없음'}>
                           <PlacePinIcon />
                           <span>{item.address || '주소 정보 없음'}</span>

@@ -6,6 +6,14 @@ import { fetchTourJson } from '../api/tourApi'
 import attractionFallback from '../assets/destinations/type-attraction.jpg'
 import cultureFallback from '../assets/destinations/type-culture.jpg'
 import courseFallback from '../assets/destinations/type-course.jpg'
+import seoulLandmark from '../assets/destinations/region-seoul.png'
+import gyeonggiLandmark from '../assets/destinations/region-gyeonggi.png'
+import gangwonLandmark from '../assets/destinations/region-gangwon.png'
+import chungcheongLandmark from '../assets/destinations/region-chungcheong.png'
+import jeollaLandmark from '../assets/destinations/region-jeolla.png'
+import gyeongsangLandmark from '../assets/destinations/region-gyeongsang.png'
+import busanLandmark from '../assets/destinations/region-busan.png'
+import jejuLandmark from '../assets/destinations/region-jeju.png'
 import './DestinationCatalogPage.css'
 import './RegionDestinationPage.css'
 
@@ -34,14 +42,14 @@ const arrangeMap = {
  * 여러 광역지역을 묶은 카드는 regionGroup을 전달합니다.
  */
 const regionConfigs = {
-  seoul: { name: '서울', lDongRegnCd: 11 },
-  'gyeonggi-incheon': { name: '경기·인천', regionGroup: 'gyeonggi-incheon' },
-  gangwon: { name: '강원', lDongRegnCd: 51 },
-  chungcheong: { name: '충청', regionGroup: 'chungcheong' },
-  jeolla: { name: '전라도', regionGroup: 'jeolla' },
-  gyeongsang: { name: '경상도', regionGroup: 'gyeongsang' },
-  busan: { name: '부산', lDongRegnCd: 26 },
-  jeju: { name: '제주', lDongRegnCd: 50 },
+  seoul: { name: '서울', lDongRegnCd: 11, landmarkImage: seoulLandmark },
+  'gyeonggi-incheon': { name: '경기·인천', regionGroup: 'gyeonggi-incheon', landmarkImage: gyeonggiLandmark },
+  gangwon: { name: '강원', lDongRegnCd: 51, landmarkImage: gangwonLandmark },
+  chungcheong: { name: '충청', regionGroup: 'chungcheong', landmarkImage: chungcheongLandmark },
+  jeolla: { name: '전라도', regionGroup: 'jeolla', landmarkImage: jeollaLandmark },
+  gyeongsang: { name: '경상도', regionGroup: 'gyeongsang', landmarkImage: gyeongsangLandmark },
+  busan: { name: '부산', lDongRegnCd: 26, landmarkImage: busanLandmark },
+  jeju: { name: '제주', lDongRegnCd: 50, landmarkImage: jejuLandmark },
 }
 
 const PAGE_SIZE = 9
@@ -84,8 +92,9 @@ export default function RegionDestinationPage({ regionKey }) {
   /**
    * 선택한 권역의 시군구 목록을 백엔드에서 조회합니다.
    *
-   * 백엔드는 TourAPI ldongCode2 결과를 다음 형태로 반환합니다.
+   * 백엔드는 로컬 지역 데이터를 다음 형태로 반환합니다.
    * [{ lDongRegnCd, lDongSignguCd, name, regionName }]
+   * 이전 DTO 필드명(lDongSignguNm, lDongRegnNm)도 함께 지원합니다.
    */
   useEffect(() => {
     if (!isValidRegion) return undefined
@@ -110,15 +119,28 @@ export default function RegionDestinationPage({ regionKey }) {
         )
         const districtItems = Array.isArray(data) ? data : (data.items ?? [])
 
-        setDistricts(
-          districtItems.map((district) => ({
-            ...district,
-            value: `${district.lDongRegnCd}:${district.lDongSignguCd}`,
-            label: district.lDongRegnNm
-            ? `${district.lDongRegnNm} ${district.lDongSignguNm}`
-            : district.lDongSignguNm,
-          })),
-        )
+        const normalizedDistricts = districtItems
+          .map((district) => {
+            const districtName = district.name
+              ?? district.lDongSignguNm
+              ?? district.label
+              ?? ''
+            return {
+              ...district,
+              value: `${district.lDongRegnCd}:${district.lDongSignguCd}`,
+              // option에는 서울·경기 같은 광역지역명을 제외하고
+              // 종로구·중구처럼 시군구 이름만 표시합니다.
+              label: districtName,
+            }
+          })
+          // 이름이나 코드가 없는 잘못된 항목은 빈 option으로 표시하지 않습니다.
+          .filter((district) => (
+            district.lDongRegnCd
+            && district.lDongSignguCd
+            && district.label
+          ))
+
+        setDistricts(normalizedDistricts)
       } catch (error) {
         if (error.name === 'AbortError') return
 
@@ -241,12 +263,18 @@ export default function RegionDestinationPage({ regionKey }) {
           {regionName}
         </p>
 
-        <div className="catalog-title">
+        {/*
+         * 관광지·문화시설·여행코스 목록 페이지와 동일한 공통 Hero 구조입니다.
+         * 지역명과 오른쪽 랜드마크 이미지는 URL의 regionKey에 따라 변경됩니다.
+         * 콘텐츠 유형을 변경해도 지역을 상징하는 이미지는 그대로 유지됩니다.
+         */}
+        <header className="catalog-hero">
           <div>
             <h1>{regionName} 여행지</h1>
             <p>{regionName}의 관광지, 문화시설과 여행코스를 둘러보세요.</p>
           </div>
-        </div>
+          <img src={regionConfig.landmarkImage} alt={`${regionName} 대표 여행 풍경`} />
+        </header>
 
         <div
           className="region-content-filters"

@@ -567,7 +567,6 @@ export default function DestinationCatalogPage({ kind }) {
                  * 실제 overview 값으로 교체합니다.
                  */}
                  
-                <p>자세한 관광정보를 확인해 보세요.</p>
 
                 <small className="catalog-address" title={item.address || '주소 정보 없음'}>
                   <PlacePinIcon />
