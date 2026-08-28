@@ -4,11 +4,11 @@ import './TravelSearchModal.css'
 import './EnjoySearchModal.css'
 
 const enjoyTypes = [
-  { id: 'festivals', icon: '🎉', title: '축제 · 행사', description: '지역 축제와 특별한 행사', contentTypeId: 15 },
-  { id: 'leports', icon: '🚴', title: '레포츠', description: '체험과 야외 액티비티', contentTypeId: 28 },
-  { id: 'food', icon: '🍽️', title: '음식점', description: '지역의 맛과 음식 이야기', contentTypeId: 39 },
-  { id: 'shopping', icon: '🛍️', title: '쇼핑', description: '시장과 지역 특산품', contentTypeId: 38 },
-  { id: 'stay', icon: '🛏️', title: '숙박', description: '호텔과 편안한 숙소', contentTypeId: 32 },
+  { id: 'festival', icon: '☘', title: '축제 · 행사' },
+  { id: 'leports', icon: '⛸', title: '레포츠' },
+  { id: 'food', icon: '🍽', title: '음식점' },
+  { id: 'shopping', icon: '🛍', title: '쇼핑' },
+  { id: 'stay', icon: '🛏', title: '숙박' },
 ]
 
 export default function EnjoySearchModal({ isOpen, onClose, useUrlDefaults = true }) {
