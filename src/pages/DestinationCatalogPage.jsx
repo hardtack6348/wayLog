@@ -43,6 +43,12 @@ const configs = {
   }
 }
 
+const destinationCategories = [
+  { kind: 'attraction', label: '관광지', href: '/destinations/attractions' },
+  { kind: 'culture', label: '문화시설', href: '/destinations/culture' },
+  { kind: 'course', label: '여행코스', href: '/destinations/courses' },
+]
+
 /**
  * GET /api/v1/regions가 아직 준비되지 않았을 때 사용하는 임시 지역 목록입니다.
  * 백엔드 지역 API가 정상 응답하면 이 목록은 자동으로 서버 데이터로 교체됩니다.
@@ -101,6 +107,11 @@ export default function DestinationCatalogPage({ kind }) {
   /** 선택한 지역의 lDongRegnCd입니다. 빈 문자열이면 전국 조회입니다. */
   const [regionCode, setRegionCode] = useState('')
 
+  /** 선택한 시·도의 시군구 목록과 현재 선택값입니다. */
+  const [districts, setDistricts] = useState([])
+  const [districtCode, setDistrictCode] = useState('')
+  const [isDistrictLoading, setIsDistrictLoading] = useState(false)
+
   const [sortOrder, setSortOrder] = useState('기본')
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -152,6 +163,44 @@ export default function DestinationCatalogPage({ kind }) {
     return () => controller.abort()
   }, [])
 
+
+  useEffect(() => {
+     /*
+      * 전체 지역이면 조회할 시군구가 없습니다.
+      * 상태 초기화는 지역 select의 onChange에서 처리합니다.
+      */
+    if (!regionCode) {
+      return undefined
+    }
+    let isActive = true
+    async function fetchDistricts() {
+      try {
+        setIsDistrictLoading(true)
+        const params = new URLSearchParams({ lDongRegnCd: regionCode })
+        const data = await fetchTourJson(
+          `/api/v1/regions/districts?${params.toString()}`,
+        )
+        if (!isActive) {
+          return
+        }
+
+        const districtItems = Array.isArray(data) ? data : (data.items ?? [])
+        setDistricts(districtItems)
+      } catch (error) {
+        if (isActive) {
+          console.error('시군구 목록 조회 중 오류가 발생했습니다.', error)
+          setDistricts([])
+        }
+      } finally {
+        if (isActive) {
+          setIsDistrictLoading(false)
+        }
+      }
+    }
+    fetchDistricts()
+    return () => { isActive = false }
+  }, [regionCode])
+
   /**
     * 페이지 종류, 현재 페이지 또는 정렬 기준이 바뀌면
     * 백엔드 여행지 목록 API를 다시 호출합니다.
@@ -179,6 +228,9 @@ export default function DestinationCatalogPage({ kind }) {
        // 전체 지역이 아닐 때만 법정동 광역지역 코드를 TourAPI 요청에 추가합니다.
        if (regionCode) {
          params.set('lDongRegnCd', regionCode)
+       }
+       if (districtCode) {
+         params.set('lDongSignguCd', districtCode)
        }
 
        const data = await fetchTourJson(
@@ -224,7 +276,8 @@ export default function DestinationCatalogPage({ kind }) {
   currentPage,
   pageSize,
   arrange,
-  regionCode])
+  regionCode,
+  districtCode])
 
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
@@ -337,7 +390,22 @@ export default function DestinationCatalogPage({ kind }) {
     <Header forceLight activePage="destinations" />
     <main className="catalog-main">
       <p className="catalog-breadcrumb"><a href="/">홈</a><span>›</span><a href="/destinations">여행지</a><span>›</span>{config.breadcrumb}</p>
-      <div className="catalog-title"><div><h1>{config.title}</h1><p>{config.description}</p></div></div>
+      <header className="catalog-hero">
+        <div><h1>{config.title}</h1><p>{config.description}</p></div>
+        <img src={config.fallbackImage} alt="" />
+      </header>
+
+      <nav className="catalog-category-tabs" aria-label="여행지 카테고리">
+        {destinationCategories.map((category) => (
+          <a
+            className={category.kind === kind ? 'is-active' : ''}
+            href={category.href}
+            key={category.kind}
+          >
+            {category.label}
+          </a>
+        ))}
+      </nav>
       
       <div className="catalog-toolbar">
         <div>
@@ -348,13 +416,49 @@ export default function DestinationCatalogPage({ kind }) {
               aria-label="지역 선택"
               value={regionCode}
               onChange={(event) => {
-                setRegionCode(event.target.value)
+                const nextRegionCode = event.target.value
+                /*
+                 * 시·도가 변경되면 이전 지역에서 선택했던
+                 * 시군구 코드와 목록을 즉시 초기화합니다.
+                 */
+                setRegionCode(nextRegionCode)
+                setDistrictCode('')
+                setDistricts([])
                 setCurrentPage(1)
               }}
             >
               {regions.map((region) => (
                 <option value={region.value} key={region.value || 'all'}>
                   {region.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="catalog-select">
+            <span>시·군·구</span>
+            <select
+              aria-label="시군구 선택"
+              value={districtCode}
+              disabled={!regionCode || isDistrictLoading}
+              onChange={(event) => {
+                setDistrictCode(event.target.value)
+                setCurrentPage(1)
+              }}
+            >
+              <option value="">
+                {!regionCode
+                  ? '시·도 먼저 선택'
+                  : isDistrictLoading
+                    ? '불러오는 중'
+                    : '전체 시·군·구'}
+              </option>
+              {districts.map((district) => (
+                <option
+                  value={String(district.lDongSignguCd)}
+                  key={`${district.lDongRegnCd}-${district.lDongSignguCd}`}
+                >
+                  {district.name}
                 </option>
               ))}
             </select>

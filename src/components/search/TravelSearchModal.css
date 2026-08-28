@@ -5,9 +5,9 @@
 .travel-search-modal header p { margin: 0 0 35px; color: #999; font-size: 18px; }
 .travel-search-modal__section { margin-top: 27px; }
 .travel-search-modal__section > h3, .travel-search-modal__detail-title h3 { margin: 0 0 16px; font-size: 24px; }
-.travel-search-modal__region-box { margin-top: 14px; padding: 20px 30px; border: 1px solid #b8d5e6; border-radius: 16px; background: #def2ff; }
-.travel-search-modal__region-box strong { font-size: 19px; }
-.travel-search-modal__region-box p { margin: 4px 0 14px; color: #999; }
+.travel-search-modal__region-box { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-top: 14px; padding: 20px 30px; border: 1px solid #b8d5e6; border-radius: 16px; background: #def2ff; }
+.travel-search-modal__region-box > strong { flex: 0 0 100%; font-size: 19px; }
+.travel-search-modal__region-box > p { flex: 0 0 100%; margin: -6px 0 4px; color: #999; }
 .travel-search-modal__region-box button, .travel-search-modal__detail-button { min-width: 90px; height: 44px; border: 1px solid #c9c9c9; border-radius: 8px; background: #fff; color: #1f1f1f; font-size: 16px; font-weight: 700; cursor: pointer; }
 .travel-search-modal__region-box button:disabled { cursor: not-allowed; opacity: .45; }
 .travel-search-modal__detail-button:disabled { cursor: not-allowed; opacity: .45; }
@@ -20,6 +20,8 @@
 .travel-search-modal__type-grid small { margin-top: 7px; color: #777; font-size: 14px; }
 .travel-search-modal__detail-title { display: flex; align-items: center; gap: 18px; }
 .travel-search-modal__detail-title span { margin-bottom: 15px; padding: 5px 10px; border: 1px solid #9ac9e5; border-radius: 6px; background: #e0f2fe; color: #3b82f6; font-size: 13px; font-weight: 700; }
+.travel-search-modal__detail-options { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.travel-search-modal__detail-options > p { flex: 0 0 100%; margin: 4px 0 0; }
 .travel-search-modal__summary { margin-top: 28px; padding: 20px 25px; border: 1px solid #b8d5e6; border-radius: 15px; background: #def2ff; }
 .travel-search-modal__summary h3 { margin: 0 0 14px; color: #3b82f6; font-size: 20px; }
 .travel-search-modal__summary > div { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -37,6 +39,10 @@
   .travel-search-modal__type-grid { grid-template-columns: 1fr; gap: 10px; }
   .travel-search-modal__type-grid > button { min-height: 126px; }
   .travel-search-modal__detail-title { display: block; }
+  .travel-search-modal__detail-options { gap: 8px; }
+  .travel-search-modal__detail-button { min-width: 82px; }
+  .travel-search-modal__region-box { gap: 8px; padding: 18px; }
+  .travel-search-modal__region-box button { min-width: 82px; }
   .travel-search-modal__actions { grid-template-columns: 1fr; }
   .travel-search-modal__actions button, .travel-search-modal__actions button:first-child, .travel-search-modal__actions button:last-child { width: 100%; justify-self: stretch; }
   .travel-search-modal__actions p { grid-row: 1; }

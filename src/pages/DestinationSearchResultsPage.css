@@ -34,14 +34,57 @@
 }
 
 .search-results-grid small {
-  display:flex;
-  align-items:center;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
   line-height: 1.6;
+}
+
+/*
+ * 주소가 두 줄 이상이어도 위치 아이콘이 압축되지 않도록
+ * 아이콘의 너비와 높이를 고정합니다.
+ */
+.search-results-grid small > svg {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 4px;
 }
 
 .search-results-grid p {
   margin: 18px 0 20px;
   line-height: 1.7;
+}
+
+.search-results-status {
+  margin: 38px 0 0 !important;
+  padding: 42px 24px;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #64748b !important;
+  text-align: center;
+}
+
+.search-results-status--error {
+  background: #fff1f2;
+  color: #dc2626 !important;
+}
+
+.search-results-page .catalog-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: .35;
+}
+
+/* 상세 항목명이 길어도 카드 제목 영역을 침범하지 않게 합니다. */
+.search-results-grid > a > div > span {
+  max-width: 46%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-results-grid h2 {
+  padding-right: 48%;
 }
 
 @media(max-width:700px) {
@@ -52,5 +95,22 @@
 
   .search-results-count {
     margin-top: 32px;
+  }
+}
+
+/* 검색 결과: 데스크톱 3열, 태블릿 2열, 모바일 1열 */
+.search-results-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .search-results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .search-results-grid {
+    grid-template-columns: 1fr;
   }
 }

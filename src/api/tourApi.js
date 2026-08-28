@@ -4,7 +4,9 @@
  * 백엔드와 외부 TourAPI 호출량을 불필요하게 늘리지 않도록 합니다.
  */
 const requestCache = new Map()
-const DEFAULT_TTL = 5 * 60 * 1000
+// 관광정보는 짧은 시간에 자주 바뀌지 않으므로 동일 URL을 30분간 재사용합니다.
+// 새로고침 전 동일 화면 이동과 React StrictMode 중복 요청을 줄입니다.
+const DEFAULT_TTL = 30 * 60 * 1000
 
 export function fetchTourJson(url, ttl = DEFAULT_TTL) {
   const now = Date.now()

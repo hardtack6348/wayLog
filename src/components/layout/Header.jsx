@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import logo from '../../assets/figma/logo.png'
 import './Header.css'
+import { clearAuthSession, getStoredMember } from '../../api/authSession'
+import { logout } from '../../api/authApi'
 
 /**
  * 모든 일반 콘텐츠 페이지에서 공유하는 상단 헤더입니다.
@@ -10,13 +12,8 @@ import './Header.css'
 function Header({ forceLight = false, activePage = '', member = null }) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
-  const [sessionMember, setSessionMember] = useState(() => {
-    try {
-      return JSON.parse(window.sessionStorage.getItem('waylogMember'))
-    } catch {
-      return null
-    }
-  })
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [sessionMember, setSessionMember] = useState(getStoredMember)
   const memberMenuRef = useRef(null)
   const currentMember = member ?? sessionMember
 
@@ -49,12 +46,36 @@ function Header({ forceLight = false, activePage = '', member = null }) {
     }
   }, [isMemberMenuOpen])
 
-  const handleLogout = () => {
-    // 백엔드 연결 시 로그아웃 API 호출 후 동일하게 회원 상태를 비웁니다.
-    window.sessionStorage.removeItem('waylogMember')
-    setSessionMember(null)
-    setIsMemberMenuOpen(false)
-    window.location.href = '/'
+  useEffect(() => {
+    const syncMember = () => setSessionMember(getStoredMember())
+    window.addEventListener('storage', syncMember)
+    window.addEventListener('waylog-auth-changed', syncMember)
+    return () => {
+      window.removeEventListener('storage', syncMember)
+      window.removeEventListener('waylog-auth-changed', syncMember)
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return
+
+    setIsLoggingOut(true)
+    try {
+      // 서버의 refresh token 쿠키를 만료시킵니다.
+      await logout()
+    } catch (error) {
+      // 서버가 일시적으로 응답하지 않아도 브라우저의 인증 정보는 제거해
+      // 사용자가 현재 화면에서 로그아웃할 수 있도록 처리합니다.
+      console.warn('서버 로그아웃 요청에 실패해 로컬 로그인 정보만 삭제합니다.', error)
+    } finally {
+      clearAuthSession()
+      setSessionMember(null)
+      setIsMemberMenuOpen(false)
+      setIsLoggingOut(false)
+
+      // 뒤로 가기로 인증 화면 상태가 복원되지 않도록 현재 기록을 교체합니다.
+      window.location.replace('/')
+    }
   }
 
   return (
@@ -87,9 +108,11 @@ function Header({ forceLight = false, activePage = '', member = null }) {
             </button>
             {isMemberMenuOpen && (
               <div className="site-header__member-menu" role="menu">
-                <a href="/bookmarks" role="menuitem">북마크</a>
                 <a href="/mypage" role="menuitem">마이 페이지</a>
-                <button type="button" role="menuitem" onClick={handleLogout}>로그아웃</button>
+                <a href="/bookmarks" role="menuitem">북마크</a>
+                <button type="button" role="menuitem" disabled={isLoggingOut} onClick={handleLogout}>
+                  {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+                </button>
               </div>
             )}
           </div>
