@@ -5,6 +5,7 @@ import mailIcon from '../assets/auth/mail.svg'
 import lockIcon from '../assets/auth/lock.svg'
 import eyeIcon from '../assets/auth/eye.svg'
 import './LoginPage.css'
+import { saveAuthSession } from '../api/authSession'
 
 /**
  * 로그인 페이지 /login
@@ -47,12 +48,6 @@ export default function LoginPage() {
     },
   }
 
-  const authStore = {
-    setMember: member => {
-      sessionStorage.setItem('member', JSON.stringify(member))
-    },
-  }
-
   const handleSubmit =  async event => {
     event.preventDefault()
      setIsLoading(true)
@@ -62,12 +57,17 @@ export default function LoginPage() {
        const response = await authApi.login({ email, password })
 
 
-       if (!response.accessToken ) {
+       if (!response.accessToken || !response.member) {
         console.log(response);
-        throw new Error('응답에 회원 정보가 없습니다.')
+        throw new Error('응답에 토큰 또는 회원 정보가 없습니다.')
        }
        
-       authStore.setMember(response.member)
+       // 헤더가 동일한 키에서 닉네임을 읽도록 인증 저장 로직을 공통화했습니다.
+       saveAuthSession({
+         member: response.member,
+         accessToken: response.accessToken,
+         rememberLogin,
+       })
 
        window.location.href = '/'
 

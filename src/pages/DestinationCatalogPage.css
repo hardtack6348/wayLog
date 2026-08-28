@@ -16,3 +16,168 @@
 .catalog-pagination { display: flex; justify-content: center; gap: 12px; margin-top: 70px; }.catalog-pagination button { width: 48px; height: 48px; border: 0; border-radius: 8px; background: #fff; font: inherit; cursor: pointer; }.catalog-pagination button:first-child,.catalog-pagination button:last-child { border: 1px solid #bbb; font-size: 30px; }.catalog-pagination .is-active { color: #fff; background: #3b82f6; }
 @media (max-width: 900px) { .catalog-grid { grid-template-columns: repeat(2, 1fr); }.catalog-toolbar { align-items: flex-start; }.catalog-toolbar button { min-width: 160px; } }
 @media (max-width: 620px) { .catalog-main { width: calc(100% - 32px); padding-top: 105px; }.catalog-title h1 { font-size: 34px; }.catalog-title > span { font-size: 38px; }.catalog-tabs { gap: 10px; }.catalog-tabs button { min-width: 95px; }.catalog-toolbar { display: block; }.catalog-toolbar strong { display: block; margin-top: 20px; }.catalog-grid { grid-template-columns: 1fr; } }
+
+/* /enjoy/festivals와 동일한 목록 페이지 시각 구조 */
+.catalog-main {
+  width: min(1380px, calc(100% - 64px));
+  padding: 126px 0 100px;
+}
+
+.catalog-breadcrumb {
+  margin-bottom: 42px;
+  color: #8995a4;
+  font-size: 14px;
+}
+
+.catalog-hero {
+  position: relative;
+  display: flex;
+  min-height: 300px;
+  align-items: center;
+  overflow: hidden;
+  padding: 48px 58px;
+  border-radius: 28px;
+  background: linear-gradient(120deg, #edf8ff, #e7fdff);
+}
+
+.catalog-hero > div {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+}
+
+.catalog-hero h1 {
+  margin: 12px 0;
+  color: #17263a;
+  font-size: 52px;
+  font-weight: 750;
+}
+
+.catalog-hero p {
+  color: #697a8e;
+  font-size: 19px;
+}
+
+.catalog-hero > img {
+  position: absolute;
+  right: 0;
+  width: 45%;
+  height: 100%;
+  object-fit: cover;
+  mask-image: linear-gradient(90deg, transparent, #000 35%);
+}
+
+.catalog-category-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 38px 0;
+}
+
+.catalog-category-tabs a {
+  min-width: 120px;
+  padding: 15px 20px;
+  border: 1px solid #dce4ec;
+  border-radius: 12px;
+  color: #53657a;
+  text-align: center;
+  text-decoration: none;
+}
+
+.catalog-category-tabs a.is-active {
+  border-color: #3b82f6;
+  color: #fff;
+  background: #3b82f6;
+}
+
+.catalog-toolbar {
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: #f3f6f9;
+}
+
+.catalog-toolbar > div {
+  gap: 14px;
+}
+
+.catalog-select {
+  gap: 9px;
+  color: #78879a;
+  font-size: 13px;
+}
+
+.catalog-select select {
+  min-width: 170px;
+  height: 44px;
+  color: #35485f;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.catalog-grid {
+  gap: 34px 20px;
+  margin-top: 38px;
+}
+
+.catalog-card {
+  border: 1px solid #e1e7ed;
+  border-radius: 22px;
+  box-shadow: 0 8px 24px #25394f12;
+}
+
+.catalog-card__link > img {
+  height: 235px;
+}
+
+.catalog-card__link > div:has(.catalog-card__heading) {
+  padding: 22px 24px 26px;
+}
+
+.catalog-card__image-tag {
+  top: 16px;
+  left: 16px;
+  padding: 6px 13px;
+  border-color: #ffffff80;
+  border-radius: 99px;
+  background: #f7fafded;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.catalog-card h2 {
+  font-size: 23px;
+  font-weight: 750;
+}
+
+.catalog-card__heading + p {
+  min-height: 44px;
+  color: #7b8796;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.catalog-address {
+  align-items: flex-start;
+  gap: 6px;
+  color: #8794a3;
+  font-size: 13px;
+}
+
+.catalog-address svg {
+  flex: 0 0 16px;
+  margin-top: 2px;
+}
+
+@media (max-width: 900px) {
+  .catalog-category-tabs { overflow-x: auto; }
+}
+
+@media (max-width: 620px) {
+  .catalog-main { width: calc(100% - 32px); padding-top: 100px; }
+  .catalog-hero { padding: 34px 28px; }
+  .catalog-hero > img { width: 100%; opacity: .25; }
+  .catalog-hero h1 { font-size: 38px; }
+  .catalog-toolbar { display: flex; align-items: flex-start; flex-direction: column; gap: 18px; }
+  .catalog-toolbar > div { width: 100%; flex-direction: column; }
+  .catalog-select, .catalog-select select { width: 100%; }
+  .catalog-toolbar strong { margin-top: 0; }
+}

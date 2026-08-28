@@ -51,6 +51,16 @@ const PAGES_PER_GROUP = 5
  * 선택한 지역의 관광지·문화시설·여행코스를 보여주는 페이지입니다.
  */
 export default function RegionDestinationPage({ regionKey }) {
+
+  /*
+   * 상태의 초깃값을 정하기 전에 현재 지역이 유효한지 먼저 확인.
+   */
+  
+  const regionConfig = regionConfigs[regionKey]
+  const isValidRegion = Boolean(regionConfig)
+  const regionName = regionConfig?.name ?? '선택 지역'
+
+
   const gridRef = useRef(null)
   const [items, setItems] = useState([])
   const [totalCount, setTotalCount] = useState(0)
@@ -60,12 +70,9 @@ export default function RegionDestinationPage({ regionKey }) {
   const [isDistrictLoading, setIsDistrictLoading] = useState(false)
   const [sortOrder, setSortOrder] = useState('기본')
   const [currentPage, setCurrentPage] = useState(1)
-  const [isLoading, setIsLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(isValidRegion)
+  const [errorMessage, setErrorMessage] = useState(isValidRegion? '' : '올바르지 않은 지역 코드입니다.')
 
-  const regionConfig = regionConfigs[regionKey]
-  const isValidRegion = Boolean(regionConfig)
-  const regionName = regionConfig?.name ?? '선택 지역'
   const selectedFilter = contentTypeFilters.find(
     (filter) => filter.contentTypeId === selectedContentTypeId,
   ) ?? contentTypeFilters[0]
@@ -107,9 +114,9 @@ export default function RegionDestinationPage({ regionKey }) {
           districtItems.map((district) => ({
             ...district,
             value: `${district.lDongRegnCd}:${district.lDongSignguCd}`,
-            label: district.regionName
-              ? `${district.regionName} ${district.name}`
-              : district.name,
+            label: district.lDongRegnNm
+            ? `${district.lDongRegnNm} ${district.lDongSignguNm}`
+            : district.lDongSignguNm,
           })),
         )
       } catch (error) {
@@ -130,11 +137,11 @@ export default function RegionDestinationPage({ regionKey }) {
    * 지역, 유형, 정렬 또는 페이지가 바뀔 때 목록을 다시 조회합니다.
    */
   useEffect(() => {
+    /*
+     * 잘못된 지역의 화면 상태는 useState 초깃값에서
+     * 이미 설정했으므로 여기서는 요청만 중단한다.
+     */
     if (!isValidRegion) {
-      setItems([])
-      setTotalCount(0)
-      setErrorMessage('올바르지 않은 지역 코드입니다.')
-      setIsLoading(false)
       return undefined
     }
 

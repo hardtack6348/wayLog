@@ -246,8 +246,8 @@ export default function SignupPage() {
          }),
        }
      )
-     const data1 = await response.json().catch(()=>({}))
-    //  console.log("이메일 인증 응답 : ",JSON.stringify(data1, null, 2))
+    //  const data1 = await response.json().catch(()=>({}))
+    // //  console.log("이메일 인증 응답 : ",JSON.stringify(data1, null, 2))
     
      if (!response.ok) {
        throw new Error('인증번호가 올바르지 않거나 만료되었습니다.')
