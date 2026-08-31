@@ -14,7 +14,7 @@ import jeolla from '../assets/destinations/region-jeolla.png'
 import gyeongsang from '../assets/destinations/region-gyeongsang.png'
 import busan from '../assets/destinations/region-busan.png'
 import jeju from '../assets/destinations/region-jeju.png'
-import attraction from '../assets/destinations/type-attraction.jpg'
+import attraction from '../assets/destinations/type-attraction-v2.png'
 import cultureType from '../assets/destinations/type-culture.jpg'
 import courseType from '../assets/destinations/type-course.jpg'
 import nature from '../assets/destinations/theme-nature.jpg'
@@ -90,13 +90,6 @@ export default function DestinationsPage() {
   const [isCultureLoading, setIsCultureLoading] = useState(true)
   const [cultureErrorMessage, setCultureErrorMessage] = useState('')
 
-  /**
-   * 코스를 따라 떠나는 여행에 표시할 TourAPI 여행코스 목록입니다.
-   */
-  const [courseItems, setCourseItems] = useState([])
-  const [isCourseLoading, setIsCourseLoading] = useState(true)
-  const [courseErrorMessage, setCourseErrorMessage] = useState('')
-
   /*
    * '주제별로 둘러보기'와 '새롭게 만나는 여행지'가 동일한
    * contentTypeId=12, arrange=Q 조건을 사용하므로 한 번 조회한 결과를 공유합니다.
@@ -147,43 +140,6 @@ export default function DestinationsPage() {
   }, [])
 
   /**
-   * 카드에서 경유지 상세를 사용하지 않으므로 비싼 /api/v1/home 대신
-   * contentTypeId=25 기본 목록 한 번만 호출합니다.
-   */
-  useEffect(() => {
-    const controller = new AbortController()
-
-    async function fetchCourseItems() {
-      try {
-        setIsCourseLoading(true)
-        setCourseErrorMessage('')
-
-        const params = new URLSearchParams({
-          page: '1',
-          size: '3',
-          contentTypeId: '25',
-          arrange: 'Q',
-        })
-        const data = await fetchTourJson(
-          `/api/v1/search?${params.toString()}`,
-        )
-        setCourseItems(data.items ?? [])
-      } catch (error) {
-        if (error.name === 'AbortError') return
-
-        console.error('추천 여행코스 조회 중 오류가 발생했습니다.', error)
-        setCourseItems([])
-        setCourseErrorMessage('추천 여행코스를 불러오지 못했습니다.')
-      } finally {
-        if (!controller.signal.aborted) setIsCourseLoading(false)
-      }
-    }
-
-    fetchCourseItems()
-    return () => controller.abort()
-  }, [])
-
-  /**
    * TourAPI contentTypeId=14 문화시설 중 대표 데이터 3건을 조회합니다.
    *
    * 백엔드가 /api/v1/search 계약에 맞춰 응답하면
@@ -228,7 +184,7 @@ export default function DestinationsPage() {
     <section className="destination-hero"><div className="destination-hero__inner"><div><p className="destination-hero__eyebrow">WAYLOG DESTINATION</p><h1>어디로 떠나볼까요?</h1><p>지역과 취향에 맞는 국내 여행지를 발견해 보세요.</p><button type="button" onClick={() => setIsSearchOpen(true)}>여행지 검색하기</button><small>지역 · 여행 유형 · 여행 조건을 선택해 검색할 수 있어요.</small></div><img src={hero} alt="국내 여행지 사진 일러스트" /></div></section>
 
     <main className="destination-main">
-      <section><SectionHeading title="어떤 여행지를 찾고 있나요?" description="관광지부터 문화시설, 여행코스까지 원하는 방식으로 둘러보세요." /><div className="destination-type-grid">{travelTypes.map(item => <a href={travelTypeLinks[item.id]} key={item.id}><article><img src={travelTypeImages[item.id]} alt="" /><span aria-hidden="true">{item.icon}</span><div><h3>{item.title}</h3><p>{item.description}</p></div></article></a>)}</div></section>
+      <section><SectionHeading title="어떤 여행지를 찾고 있나요?" description="관광지와 문화시설을 원하는 방식으로 둘러보세요." /><div className="destination-type-grid">{travelTypes.map(item => item.id === 'course' ? <div className="destination-type-grid__disabled" aria-disabled="true" key={item.id}><article><img src={travelTypeImages[item.id]} alt="" /><span aria-hidden="true">{item.icon}</span><div><b>개발 준비 중</b><h3>{item.title}</h3><p>{item.description}</p></div></article></div> : <a href={travelTypeLinks[item.id]} key={item.id}><article><img src={travelTypeImages[item.id]} alt="" /><span aria-hidden="true">{item.icon}</span><div><h3>{item.title}</h3><p>{item.description}</p></div></article></a>)}</div></section>
 
       <section><SectionHeading title="지역별로 둘러보기" description="가고 싶은 지역을 선택해 여행지를 확인해 보세요." /><div className="region-grid">{regions.map(item => <a href={`/destinations/regions/${item.regionKey}`} key={item.regionKey}><article><img src={item.image} alt={`${item.title} 여행 풍경`} /><h3>{item.title}</h3></article></a>)}</div></section>
 
@@ -378,82 +334,6 @@ export default function DestinationsPage() {
                         </p>
 
                         <p>다양한 문화와 역사를 만나볼 수 있는 공간입니다.</p>
-                      </div>
-                    </article>
-                  </a>
-                )
-              })}
-            </div>
-          )}
-      </section>
-
-      <section>
-        <SectionHeading
-          title="코스를 따라 떠나는 여행"
-          description="여러 장소를 순서대로 둘러보는 TourAPI 여행코스입니다."
-          link="/destinations/courses"
-        />
-
-        {isCourseLoading && (
-          <p className="destination-api-status">
-            여행코스를 불러오는 중입니다.
-          </p>
-        )}
-
-        {!isCourseLoading && courseErrorMessage && (
-          <p className="destination-api-status destination-api-status--error">
-            {courseErrorMessage}
-          </p>
-        )}
-
-        {!isCourseLoading &&
-          !courseErrorMessage &&
-          courseItems.length === 0 && (
-            <p className="destination-api-status">
-              현재 표시할 여행코스가 없습니다.
-            </p>
-          )}
-
-        {!isCourseLoading &&
-          !courseErrorMessage &&
-          courseItems.length > 0 && (
-            <div className="destination-course-grid">
-              {courseItems.map((item) => {
-                return (
-                  <a
-                    className="destination-course-card__link"
-                    href={
-                      `/destinations/detail/${item.contentId}` +
-                      `?contentTypeId=${item.contentTypeId}`
-                    }
-                    key={item.contentId}
-                  >
-                    <article>
-                      <img
-                        className="destination-course-card__photo"
-                        src={item.image || courseType}
-                        alt={item.title || '여행코스 이미지'}
-                        onError={(event) => {
-                          event.currentTarget.onerror = null
-                          event.currentTarget.src = courseType
-                        }}
-                      />
-
-                      <div>
-                        <div className="destination-course-meta">
-                          <span>{item.region || '전국'}</span>
-                          <small>{item.duration || '상세 일정 확인'}</small>
-                        </div>
-
-                        <h3 title={item.title || '여행코스 이름 없음'}>
-                          {item.title || '여행코스 이름 없음'}
-                        </h3>
-
-                        <p>
-                          {item.description ||
-                            '국내 주요 관광지를 둘러보는 여행코스입니다.'}
-                        </p>
-
                       </div>
                     </article>
                   </a>

@@ -22,7 +22,7 @@ export default function RecommendedCourseSection({
          * 전체 여행코스 페이지로 이동하는 링크입니다.
          * href에 실제 프론트 라우팅 경로를 사용합니다.
       */}
-      <a href="/destinations/courses">코스 더보기 <span>→</span></a>
+      <span className="section-heading__disabled-link" aria-label="여행코스 페이지 준비 중">페이지 준비 중</span>
     </div>
 
     {/*

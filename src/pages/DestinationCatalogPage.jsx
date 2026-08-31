@@ -3,12 +3,13 @@ import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import PlacePinIcon from '../components/icons/PlacePinIcon'
 import { fetchTourJson } from '../api/tourApi'
+import { canUseTourBookmark, fetchTourBookmarks, toggleTourBookmark } from '../api/tourBookmarkApi'
 
 /*
  * TourAPI가 이미지를 제공하지 않을 때 사용할
  * 페이지 유형별 기본 이미지입니다.
  */
-import attractionFallback from '../assets/destinations/type-attraction.jpg'
+import attractionFallback from '../assets/destinations/type-attraction-v2.png'
 import cultureFallback from '../assets/destinations/type-culture.jpg'
 import courseFallback from '../assets/destinations/type-course.jpg'
 
@@ -100,6 +101,7 @@ export default function DestinationCatalogPage({ kind }) {
   const [errorMessage, setErrorMessage] = useState('')
 
   const [bookmarkedCards, setBookmarkedCards] = useState(() => new Set())
+  const [bookmarkPendingIds, setBookmarkPendingIds] = useState(() => new Set())
 
   /** 백엔드에서 받은 최신 TourAPI 법정동 광역지역 목록입니다. */
   const [regions, setRegions] = useState(fallbackRegions)
@@ -161,6 +163,24 @@ export default function DestinationCatalogPage({ kind }) {
 
     fetchRegions()
     return () => controller.abort()
+  }, [])
+
+  /** 로그인한 사용자의 최근 여행지 북마크를 카드에 표시합니다. */
+  useEffect(() => {
+    if (!canUseTourBookmark()) return undefined
+    let isActive = true
+
+    fetchTourBookmarks('DESTINATION')
+      .then((data) => {
+        if (isActive) {
+          setBookmarkedCards(new Set((data.content ?? []).map((bookmark) => String(bookmark.contentId))))
+        }
+      })
+      .catch(() => {
+        // 북마크 상태 조회 실패는 목록 조회를 막지 않습니다.
+      })
+
+    return () => { isActive = false }
   }, [])
 
 
@@ -378,12 +398,36 @@ export default function DestinationCatalogPage({ kind }) {
     window.requestAnimationFrame(() => window.scrollTo({ top: Math.max(0, gridRef.current?.offsetTop - 110), behavior: 'smooth' }))
   }
 
-  const toggleBookmark = cardKey => {
-    setBookmarkedCards(current => {
-      const next = new Set(current)
-      next.has(cardKey) ? next.delete(cardKey) : next.add(cardKey)
-      return next
-    })
+  const toggleBookmark = async (item, categoryName) => {
+    const cardKey = String(item.contentId)
+    if (!canUseTourBookmark()) {
+      window.location.href = '/login'
+      return
+    }
+    if (bookmarkPendingIds.has(cardKey)) return
+
+    setBookmarkPendingIds((current) => new Set(current).add(cardKey))
+    try {
+      const result = await toggleTourBookmark({
+        ...item,
+        contentTypeId: config.contentTypeId,
+        categoryName,
+      })
+      setBookmarkedCards((current) => {
+        const next = new Set(current)
+        if (result.active) next.add(cardKey)
+        else next.delete(cardKey)
+        return next
+      })
+    } catch (error) {
+      window.alert(error.message || '북마크를 변경하지 못했습니다.')
+    } finally {
+      setBookmarkPendingIds((current) => {
+        const next = new Set(current)
+        next.delete(cardKey)
+        return next
+      })
+    }
   }
 
   return <div className="catalog-page">
@@ -396,12 +440,12 @@ export default function DestinationCatalogPage({ kind }) {
       </header>
 
       <nav className="catalog-category-tabs" aria-label="여행지 카테고리">
-        {destinationCategories.map((category) => (
-          <a
-            className={category.kind === kind ? 'is-active' : ''}
-            href={category.href}
-            key={category.kind}
-          >
+        {destinationCategories.map((category) => category.kind === 'course' ? (
+          <span className="is-disabled" aria-label="여행코스 페이지 준비 중" key={category.kind}>
+            {category.label}<small>준비 중</small>
+          </span>
+        ) : (
+          <a className={category.kind === kind ? 'is-active' : ''} href={category.href} key={category.kind}>
             {category.label}
           </a>
         ))}
@@ -542,6 +586,17 @@ export default function DestinationCatalogPage({ kind }) {
         const region = item.address
         ?.trim().split(/\s+/)[0] || '전국'
 
+          /*
+           * 관광지·문화시설은 로컬 분류체계의 가장 구체적인 명칭을
+           * 제목 위에 표시합니다. 백엔드가 아직 명칭을 반환하지 않는
+           * 항목은 현재 페이지 유형명을 안전한 기본값으로 사용합니다.
+           */
+          const detailCategoryName =
+            item.lclsSystm3Nm ??
+            item.lclsSystm2Nm ??
+            item.categoryName ??
+            config.breadcrumb
+
           return <article className="catalog-card" key={cardKey}>
             <a className="catalog-card__link" href={`/destinations/detail/${item.contentId}` + `?contentTypeId=${item.contentTypeId}`}>
               <img src={cardImage} alt={item.title || '여행지 이미지'} onError={(event) => {
@@ -554,9 +609,12 @@ export default function DestinationCatalogPage({ kind }) {
               }} />
               <span className="catalog-card__image-tag">{config.breadcrumb}</span>
               <div>
-                <div className="catalog-card__heading">
+                <div className={`catalog-card__heading${kind !== 'course' ? ' catalog-card__heading--vertical' : ''}`}>
+                  {kind !== 'course' && (
+                    <small className="catalog-card__detail-category">{detailCategoryName}</small>
+                  )}
                   <h2 title={item.title || '여행지 이름 없음'}>{item.title || '여행지 이름 없음'}</h2>
-                  <small>{region}</small>
+                  {kind === 'course' && <small>{region}</small>}
                 </div>
 
                 {/*
@@ -577,8 +635,16 @@ export default function DestinationCatalogPage({ kind }) {
             {kind !== 'course' && (
               <button className={`catalog-card__bookmark${isBookmarked ? ' is-active' : ''}`} 
               type="button" 
+              title={isBookmarked ? '북마크 해제' : '북마크에 저장'}
               aria-label={`${item.title} 북마크 ${isBookmarked ? '해제' : '등록'}`} 
-              aria-pressed={isBookmarked} onClick={() => toggleBookmark(cardKey)}>
+              aria-pressed={isBookmarked}
+              disabled={bookmarkPendingIds.has(cardKey)}
+              onClick={(event) => {
+                /* 카드 링크 이동 없이 실제 북마크 API만 호출합니다. */
+                event.preventDefault()
+                event.stopPropagation()
+                toggleBookmark(item, detailCategoryName)
+              }}>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-3.75L6 21V4.75Z" /></svg>
             </button>
           )}

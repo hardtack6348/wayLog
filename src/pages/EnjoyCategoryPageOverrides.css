@@ -14,3 +14,51 @@
 .enjoy-catalog-status--error { color: #b42318; background: #fef3f2; }
 .enjoy-catalog-grid address { min-width: 0; }
 .enjoy-catalog-grid address span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.enjoy-catalog-grid .enjoy-catalog-detail-category { color: #3479d5; font-weight: 700; }
+
+/*
+ * 카드 하단을 세부 카테고리 / 제목 / 주소의 세 구역으로 고정합니다.
+ * 제목 길이가 달라도 주소가 같은 높이에 배치되어 카드 정렬이 흐트러지지 않습니다.
+ */
+.enjoy-catalog-grid article > a > div {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 162px;
+  flex-direction: column;
+  padding: 21px 24px 23px;
+}
+
+.enjoy-catalog-grid .enjoy-catalog-detail-category {
+  min-height: 18px;
+  align-self: flex-start;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.enjoy-catalog-grid h2 {
+  display: -webkit-box;
+  min-height: 58px;
+  overflow: hidden;
+  margin: 8px 0 12px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.enjoy-catalog-grid address {
+  width: 100%;
+  margin-top: auto;
+}
+
+/* 지역, 시군구, 정렬, 축제 기간 필터가 좁은 화면에서도 자연스럽게 줄바꿈됩니다. */
+.enjoy-catalog-toolbar > div { flex-wrap: wrap; }
+.enjoy-catalog-toolbar select:disabled { color: #9aa6b4; background: #edf1f5; cursor: not-allowed; }
+
+@media (max-width: 720px) {
+  .enjoy-catalog-toolbar > div { width: 100%; }
+  .enjoy-catalog-toolbar label { width: 100%; justify-content: space-between; }
+  .enjoy-catalog-toolbar select { width: min(230px, 70%); }
+  .enjoy-catalog-grid article > a > div { min-height: 148px; }
+  .enjoy-catalog-grid h2 { min-height: 50px; }
+}

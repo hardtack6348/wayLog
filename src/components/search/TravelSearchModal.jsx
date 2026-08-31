@@ -245,7 +245,7 @@ export default function TravelSearchModal({ isOpen, onClose, useUrlDefaults = tr
         <div className="travel-search-modal__section">
           <h3>2. 어떤 여행지를 찾고 있나요?</h3>
           <div className="travel-search-modal__type-grid">
-            {travelTypes.map((item) => <button key={item.id} className={travelType === item.title ? 'is-selected' : ''} type="button" onClick={() => selectTravelType(item.title)}><span className="travel-search-modal__type-icon" aria-hidden="true">{item.icon}</span><strong>{item.title}</strong><small>{item.description}</small></button>)}
+            {travelTypes.filter((item) => item.id !== 'course').map((item) => <button key={item.id} className={travelType === item.title ? 'is-selected' : ''} type="button" onClick={() => selectTravelType(item.title)}><span className="travel-search-modal__type-icon" aria-hidden="true">{item.icon}</span><strong>{item.title}</strong><small>{item.description}</small></button>)}
           </div>
         </div>
 

@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './App.css'
 import HeroSection from './components/home/HeroSection'
 import RecommendedDestinationSection from './components/home/RecommendedDestinationSection'
-import RecommendedCourseSection from './components/home/RecommendedCourseSection'
 import ThemeDestinationSection from './components/home/ThemeDestinationSection'
 import TravelRecordBanner from './components/home/TravelRecordBanner'
 import WeeklyNewsSection from './components/home/WeeklyNewsSection'
@@ -20,6 +19,9 @@ import TravelDetailPage from './pages/TravelDetailPage'
 import EnjoyCategoryPage from './pages/EnjoyCategoryPage'
 import EnjoyDetailPage from './pages/EnjoyDetailPage'
 import EnjoySearchResultsPage from './pages/EnjoySearchResultsPage'
+import TravelFeedPage from './pages/TravelFeedPage'
+import FeedProfilePage from './pages/FeedProfilePage'
+import BookmarkPage from './pages/BookmarkPage'
 
 /**
  * 홈 API 요청 Promise를 저장합니다.
@@ -28,6 +30,14 @@ import EnjoySearchResultsPage from './pages/EnjoySearchResultsPage'
  * 동일한 /api/home 요청을 재사용해 중복 호출을 방지합니다.
  */
 let homeDataPromise = null;
+
+/** 개발 보류 중인 여행코스 URL로 직접 접근하면 여행지 메인으로 이동합니다. */
+function CoursePageRedirect() {
+  useEffect(() => {
+    window.location.replace('/destinations')
+  }, [])
+  return null
+}
 
 /**
  * 백엔드의 메인 화면 데이터를 한 번만 조회합니다.
@@ -79,7 +89,6 @@ function HomePage({ mainRef }) {
 
   const [homeData, setHomeData] = useState({
     recommendedDestinations: [],
-    recommendedCourses: [],
     enjoyItems: [],
     festivals: [],
   })
@@ -123,7 +132,6 @@ function HomePage({ mainRef }) {
         setHomeData({
           recommendedDestinations:
           data.recommendedDestinations ?? [],
-          recommendedCourses: data.recommendedCourses ?? [],
           enjoyItems: data.enjoyItems ?? [],
           festivals: data.festivals ?? [],
         })
@@ -182,17 +190,6 @@ function HomePage({ mainRef }) {
           } 
           isLoading={isLoading}
           errorMessage={errorMessage}
-          />
-
-          {/*
-         * 추천 여행코스는 동일한 API 응답의
-         * recommendedCourses를 전달받습니다.
-         */}
-
-          <RecommendedCourseSection 
-            courses={homeData.recommendedCourses}
-            isLoading={isLoading}
-            errorMessage={errorMessage}
           />
 
           {/*
@@ -284,6 +281,18 @@ function App() {
     return <ForgotPasswordPage />
   }
 
+  if (window.location.pathname === '/feed/profile') {
+    return <FeedProfilePage />
+  }
+
+  if (window.location.pathname === '/feed') {
+    return <TravelFeedPage />
+  }
+
+  if (window.location.pathname === '/bookmarks') {
+    return <BookmarkPage />
+  }
+
   if (window.location.pathname === '/enjoy') {
     return <TravelEnjoyPage />
   }
@@ -298,10 +307,16 @@ function App() {
   }
 
   if (window.location.pathname === '/destinations/search') {
+    if (new URLSearchParams(window.location.search).get('contentTypeId') === '25') {
+      return <CoursePageRedirect />
+    }
     return <DestinationSearchResultsPage />
   }
 
   if (window.location.pathname.startsWith('/destinations/detail/')) {
+    if (new URLSearchParams(window.location.search).get('contentTypeId') === '25') {
+      return <CoursePageRedirect />
+    }
     return <TravelDetailPage />
   }
 
@@ -323,7 +338,7 @@ function App() {
   }
 
   if (window.location.pathname === '/destinations/courses') {
-    return <DestinationCatalogPage kind="course" />
+    return <CoursePageRedirect />
   }
 
   if (window.location.pathname === '/destinations') {

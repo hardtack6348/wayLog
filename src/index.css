@@ -18,8 +18,9 @@
   --heading: 'Pretendard', system-ui, 'Segoe UI', sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  /* 본문은 16px을 기준으로 두고, 긴 관광 정보도 편하게 읽히도록 행간을 통일합니다. */
+  font: 16px/1.6 var(--sans);
+  letter-spacing: -0.01em;
   color-scheme: light;
   color: var(--text);
   background: var(--bg);
@@ -55,32 +56,46 @@ body {
 }
 
 h1,
-h2 {
+h2,
+h3 {
   font-family: var(--heading);
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text-h);
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
+  font-size: 48px;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  margin: 0;
   @media (max-width: 1024px) {
     font-size: 36px;
     margin: 20px 0;
   }
 }
 h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
+  font-size: 30px;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+  margin: 0;
   @media (max-width: 1024px) {
     font-size: 20px;
   }
 }
 p {
   margin: 0;
+}
+
+h3 {
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 code,

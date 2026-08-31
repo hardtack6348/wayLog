@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import PlacePinIcon from '../components/icons/PlacePinIcon'
-import EnjoySearchModal from '../components/search/EnjoySearchModal'
 import { fetchTourJson } from '../api/tourApi'
 import festival from '../assets/enjoy/category-festival.png'
 import leports from '../assets/enjoy/category-leports.png'
@@ -35,8 +34,7 @@ function InfoCards({ items, badge, contentTypeId, fallbackImage, columns = 4 }) 
 }
 
 export default function TravelEnjoyPage() {
-  // 각 배열은 추후 백엔드 TourAPI 응답으로 대체하되 카드 마크업은 그대로 재사용할 수 있습니다.
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  // 각 배열은 백엔드 TourAPI 응답을 카드 마크업에 연결해 보여 줍니다.
   const [weeklyNews, setWeeklyNews] = useState([])
   const [isFestivalLoading, setIsFestivalLoading] = useState(true)
   const [festivalErrorMessage, setFestivalErrorMessage] = useState('')
@@ -117,8 +115,6 @@ export default function TravelEnjoyPage() {
           <p className="enjoy-hero__eyebrow">WAYLOG EXPERIENCE</p>
           <h1>여행을 더 즐겁게</h1>
           <p>축제부터 맛집, 숙소까지 여행에 필요한 정보를 둘러보세요.</p>
-          <button type="button" onClick={() => setIsSearchOpen(true)}>여행 즐길거리 검색</button>
-          <small>지역과 콘텐츠 유형을 선택해 검색할 수 있어요.</small>
         </div>
 
         {/* 여행의 여러 순간을 사진 엽서처럼 겹쳐 표현한 Hero 콜라주입니다. */}
@@ -164,6 +160,5 @@ export default function TravelEnjoyPage() {
       <section className="enjoy-record"><img src={record} alt="여행 기록 일러스트" /><h2>여행의 순간을 기록하고, 함께 나눠요</h2><button type="button">여행 기록하기</button></section>
     </main>
     <Footer />
-    <EnjoySearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
   </div>
 }

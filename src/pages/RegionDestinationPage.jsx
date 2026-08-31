@@ -3,9 +3,9 @@ import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import PlacePinIcon from '../components/icons/PlacePinIcon'
 import { fetchTourJson } from '../api/tourApi'
-import attractionFallback from '../assets/destinations/type-attraction.jpg'
+import { canUseTourBookmark, fetchTourBookmarks, toggleTourBookmark } from '../api/tourBookmarkApi'
+import attractionFallback from '../assets/destinations/type-attraction-v2.png'
 import cultureFallback from '../assets/destinations/type-culture.jpg'
-import courseFallback from '../assets/destinations/type-course.jpg'
 import seoulLandmark from '../assets/destinations/region-seoul.png'
 import gyeonggiLandmark from '../assets/destinations/region-gyeonggi.png'
 import gangwonLandmark from '../assets/destinations/region-gangwon.png'
@@ -23,7 +23,6 @@ import './RegionDestinationPage.css'
 const contentTypeFilters = [
   { label: '관광지', contentTypeId: 12, fallbackImage: attractionFallback },
   { label: '문화시설', contentTypeId: 14, fallbackImage: cultureFallback },
-  { label: '여행코스', contentTypeId: 25, fallbackImage: courseFallback },
 ]
 
 /**
@@ -80,6 +79,9 @@ export default function RegionDestinationPage({ regionKey }) {
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(isValidRegion)
   const [errorMessage, setErrorMessage] = useState(isValidRegion? '' : '올바르지 않은 지역 코드입니다.')
+  /* 지역별 관광지·문화시설 카드의 실제 북마크 상태입니다. */
+  const [bookmarkedCards, setBookmarkedCards] = useState(() => new Set())
+  const [bookmarkPendingIds, setBookmarkPendingIds] = useState(() => new Set())
 
   const selectedFilter = contentTypeFilters.find(
     (filter) => filter.contentTypeId === selectedContentTypeId,
@@ -88,6 +90,53 @@ export default function RegionDestinationPage({ regionKey }) {
   const selectedDistrict = districts.find(
     (district) => district.value === selectedDistrictValue,
   )
+
+  /** 로그인한 사용자의 최근 여행지 북마크를 현재 카드 상태에 반영합니다. */
+  useEffect(() => {
+    if (!canUseTourBookmark()) return undefined
+    let isActive = true
+
+    fetchTourBookmarks('DESTINATION')
+      .then((data) => {
+        if (isActive) setBookmarkedCards(new Set((data.content ?? []).map((bookmark) => String(bookmark.contentId))))
+      })
+      .catch(() => {})
+
+    return () => { isActive = false }
+  }, [])
+
+  /** 카드의 TourAPI 콘텐츠를 실제 북마크 API에 저장하거나 해제합니다. */
+  const toggleBookmark = async (item, categoryName) => {
+    const contentId = String(item.contentId)
+    if (!canUseTourBookmark()) {
+      window.location.href = '/login'
+      return
+    }
+    if (bookmarkPendingIds.has(contentId)) return
+
+    setBookmarkPendingIds((current) => new Set(current).add(contentId))
+    try {
+      const result = await toggleTourBookmark({
+        ...item,
+        contentTypeId: selectedContentTypeId,
+        categoryName,
+      })
+      setBookmarkedCards((current) => {
+        const next = new Set(current)
+        if (result.active) next.add(contentId)
+        else next.delete(contentId)
+        return next
+      })
+    } catch (error) {
+      window.alert(error.message || '북마크를 변경하지 못했습니다.')
+    } finally {
+      setBookmarkPendingIds((current) => {
+        const next = new Set(current)
+        next.delete(contentId)
+        return next
+      })
+    }
+  }
 
   /**
    * 선택한 권역의 시군구 목록을 백엔드에서 조회합니다.
@@ -271,7 +320,7 @@ export default function RegionDestinationPage({ regionKey }) {
         <header className="catalog-hero">
           <div>
             <h1>{regionName} 여행지</h1>
-            <p>{regionName}의 관광지, 문화시설과 여행코스를 둘러보세요.</p>
+            <p>{regionName}의 관광지와 문화시설을 둘러보세요.</p>
           </div>
           <img src={regionConfig.landmarkImage} alt={`${regionName} 대표 여행 풍경`} />
         </header>
@@ -361,9 +410,18 @@ export default function RegionDestinationPage({ regionKey }) {
         {!isLoading && !errorMessage && items.length > 0 && (
           <div ref={gridRef} className="catalog-grid">
             {items.map((item) => {
+              const isBookmarked = bookmarkedCards.has(String(item.contentId))
               const cardImage =
                 item.image || item.thumbnail || selectedFilter.fallbackImage
-              const itemRegion = item.address?.trim().split(/\s+/)[0] || regionName
+              /*
+               * /destinations/attractions 카드와 동일하게
+               * TourAPI 분류체계의 가장 구체적인 이름을 제목 위에 표시합니다.
+               */
+              const detailCategoryName =
+                item.lclsSystm3Nm ??
+                item.lclsSystm2Nm ??
+                item.categoryName ??
+                selectedFilter.label
 
               return (
                 <article className="catalog-card" key={item.contentId}>
@@ -388,14 +446,14 @@ export default function RegionDestinationPage({ regionKey }) {
                     </span>
 
                     <div>
-                      <div className="catalog-card__heading">
+                      <div className="catalog-card__heading catalog-card__heading--vertical">
+                        <small className="catalog-card__detail-category">
+                          {detailCategoryName}
+                        </small>
                         <h2 title={item.title || '여행지 이름 없음'}>
                           {item.title || '여행지 이름 없음'}
                         </h2>
-                        <small>{itemRegion}</small>
                       </div>
-
-                      <p>{regionName}의 주요 관광정보를 확인해 보세요.</p>
 
                       <small
                         className="catalog-address"
@@ -406,6 +464,24 @@ export default function RegionDestinationPage({ regionKey }) {
                       </small>
                     </div>
                   </a>
+                  <button
+                    className={`catalog-card__bookmark${isBookmarked ? ' is-active' : ''}`}
+                    type="button"
+                    title={isBookmarked ? '북마크 해제' : '북마크에 저장'}
+                    aria-label={`${item.title || '여행지'} 북마크 ${isBookmarked ? '해제' : '등록'}`}
+                    aria-pressed={isBookmarked}
+                    disabled={bookmarkPendingIds.has(String(item.contentId))}
+                    onClick={(event) => {
+                      /* 카드 링크 이동을 막고 현재 목록에서만 저장 상태를 변경합니다. */
+                      event.preventDefault()
+                      event.stopPropagation()
+                      toggleBookmark(item, detailCategoryName)
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-3.75L6 21V4.75Z" />
+                    </svg>
+                  </button>
                 </article>
               )
             })}

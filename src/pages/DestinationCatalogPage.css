@@ -74,8 +74,12 @@
 }
 
 .catalog-category-tabs a {
+  box-sizing: border-box;
+  display: grid;
   min-width: 120px;
-  padding: 15px 20px;
+  height: 58px;
+  place-items: center;
+  padding: 0 20px;
   border: 1px solid #dce4ec;
   border-radius: 12px;
   color: #53657a;
@@ -87,6 +91,30 @@
   border-color: #3b82f6;
   color: #fff;
   background: #3b82f6;
+}
+.catalog-category-tabs .is-disabled {
+  box-sizing: border-box;
+  display: flex;
+  width: 120px;
+  height: 58px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 20px;
+  border: 1px solid #e1e6ec;
+  border-radius: 12px;
+  color: #99a3af;
+  background: #f3f5f7;
+  line-height: 1.15;
+  text-align: center;
+  cursor: not-allowed;
+}
+
+.catalog-category-tabs .is-disabled small {
+  display: block;
+  font-size: 9px;
+  line-height: 1;
 }
 
 .catalog-toolbar {
@@ -167,6 +195,48 @@
   margin-top: 2px;
 }
 
+/* 관광지·문화시설 카드: 세부 카테고리 → 제목 → 주소의 상하 구조 */
+.catalog-card__link > div:has(.catalog-card__heading--vertical) {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 162px;
+  flex-direction: column;
+  padding: 21px 24px 23px;
+}
+
+.catalog-card__heading--vertical {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+}
+
+.catalog-card__heading--vertical .catalog-card__detail-category {
+  min-height: 18px;
+  color: #3479d5;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.catalog-card__heading--vertical h2 {
+  display: -webkit-box;
+  min-height: 58px;
+  overflow: hidden;
+  margin: 8px 0 12px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.catalog-card__heading--vertical ~ .catalog-address {
+  width: 100%;
+  margin-top: auto;
+}
+
 @media (max-width: 900px) {
   .catalog-category-tabs { overflow-x: auto; }
 }
@@ -180,4 +250,29 @@
   .catalog-toolbar > div { width: 100%; flex-direction: column; }
   .catalog-select, .catalog-select select { width: 100%; }
   .catalog-toolbar strong { margin-top: 0; }
+  .catalog-card__link > div:has(.catalog-card__heading--vertical) { min-height: 148px; }
+  .catalog-card__heading--vertical h2 { min-height: 50px; }
+}
+
+/* 관광지·문화시설 카드의 북마크 버튼을 이미지 우측 상단에 고정 표시합니다. */
+.catalog-card__bookmark {
+  z-index: 5;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgba(215, 227, 240, .9);
+  color: #47627d;
+  background: rgba(255, 255, 255, .96);
+}
+
+.catalog-card__bookmark:hover,
+.catalog-card__bookmark.is-active {
+  color: #2878ed;
+  background: #f6faff;
+}
+
+.catalog-card__bookmark svg {
+  width: 23px;
+  height: 23px;
 }

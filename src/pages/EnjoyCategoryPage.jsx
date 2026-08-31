@@ -4,6 +4,7 @@ import Footer from '../components/layout/Footer'
 import PlacePinIcon from '../components/icons/PlacePinIcon'
 import { enjoyCategories, enjoyConfigs } from '../data/enjoyMocks'
 import { fetchTourJson } from '../api/tourApi'
+import { canUseTourBookmark, fetchTourBookmarks, toggleTourBookmark } from '../api/tourBookmarkApi'
 import './EnjoyCategoryPage.css'
 import './EnjoyCategoryPageOverrides.css'
 
@@ -14,6 +15,15 @@ const contentTypeByCategory = {
   food: 39,
   shopping: 38,
   stay: 32,
+}
+
+/** 백엔드가 세부 분류명을 주지 않을 때 카드에 표시할 기본 카테고리명입니다. */
+const categoryLabelByCategory = {
+  festivals: '축제 · 행사',
+  leports: '레포츠',
+  food: '음식점',
+  shopping: '쇼핑',
+  stay: '숙박',
 }
 
 /** 화면의 정렬 옵션을 TourAPI arrange 값으로 변환합니다. */
@@ -67,9 +77,14 @@ export default function EnjoyCategoryPage({ category }) {
   const [totalCount, setTotalCount] = useState(0)
   const [regions, setRegions] = useState(fallbackRegions)
   const [regionCode, setRegionCode] = useState('')
+  /** 선택한 시·도의 시군구 목록과 현재 선택된 법정동 시군구 코드입니다. */
+  const [districts, setDistricts] = useState([])
+  const [districtCode, setDistrictCode] = useState('')
+  const [isDistrictLoading, setIsDistrictLoading] = useState(false)
   const [sort, setSort] = useState('기본')
   const [festivalStatus, setFestivalStatus] = useState('ALL')
   const [saved, setSaved] = useState(() => new Set())
+  const [bookmarkPendingIds, setBookmarkPendingIds] = useState(() => new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -118,6 +133,38 @@ export default function EnjoyCategoryPage({ category }) {
   }, [])
 
   /**
+   * 광역지역이 선택되면 백엔드 로컬 지역 데이터에서 시군구를 조회합니다.
+   * 이 API는 TourAPI를 직접 호출하지 않으므로 지역 필터 변경으로 호출량이 증가하지 않습니다.
+   */
+  useEffect(() => {
+    if (!regionCode) return undefined
+
+    let isActive = true
+
+    async function fetchDistricts() {
+      try {
+        setIsDistrictLoading(true)
+        const params = new URLSearchParams({ lDongRegnCd: regionCode })
+        const data = await fetchTourJson(`/api/v1/regions/districts?${params.toString()}`)
+        if (!isActive) return
+
+        const districtItems = Array.isArray(data) ? data : (data.items ?? [])
+        setDistricts(districtItems.filter((district) => district.lDongSignguCd != null))
+      } catch (error) {
+        if (isActive) {
+          console.error('시군구 목록 조회 중 오류가 발생했습니다.', error)
+          setDistricts([])
+        }
+      } finally {
+        if (isActive) setIsDistrictLoading(false)
+      }
+    }
+
+    fetchDistricts()
+    return () => { isActive = false }
+  }, [regionCode])
+
+  /**
    * 카테고리·지역·정렬·페이지가 바뀔 때 서버에서 목록을 다시 조회합니다.
    * 목업 데이터를 복제하지 않으므로 items와 totalCount 모두 실제 API 값입니다.
    */
@@ -137,6 +184,7 @@ export default function EnjoyCategoryPage({ category }) {
         })
 
         if (regionCode) params.set('lDongRegnCd', regionCode)
+        if (districtCode) params.set('lDongSignguCd', districtCode)
 
         /*
          * 축제의 기간 필터가 선택되면 시작일·종료일을 판별하는
@@ -150,6 +198,7 @@ export default function EnjoyCategoryPage({ category }) {
                 size: String(PAGE_SIZE),
                 status: festivalStatus,
                 ...(regionCode ? { lDongRegnCd: regionCode } : {}),
+                ...(districtCode ? { lDongSignguCd: districtCode } : {}),
                 arrange: arrangeBySort[sort] ?? 'Q',
               }).toString()}`
             : `/api/v1/search?${params.toString()}`
@@ -171,7 +220,21 @@ export default function EnjoyCategoryPage({ category }) {
 
     fetchEnjoyItems()
     return () => controller.abort()
-  }, [category, config.title, contentTypeId, currentPage, festivalStatus, regionCode, sort])
+  }, [category, config.title, contentTypeId, currentPage, districtCode, festivalStatus, regionCode, sort])
+
+  /** 로그인한 사용자가 저장한 여행 즐기기 항목을 카드 상태에 반영합니다. */
+  useEffect(() => {
+    if (!canUseTourBookmark()) return undefined
+    let isActive = true
+
+    fetchTourBookmarks('ENJOY')
+      .then((data) => {
+        if (isActive) setSaved(new Set((data.content ?? []).map((bookmark) => String(bookmark.contentId))))
+      })
+      .catch(() => {})
+
+    return () => { isActive = false }
+  }, [])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const pageGroupStart =
@@ -184,6 +247,38 @@ export default function EnjoyCategoryPage({ category }) {
   function movePage(page) {
     setCurrentPage(Math.min(Math.max(page, 1), totalPages))
     gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  async function toggleBookmark(item, categoryName) {
+    const itemKey = String(item.contentId)
+    if (!canUseTourBookmark()) {
+      window.location.href = '/login'
+      return
+    }
+    if (bookmarkPendingIds.has(itemKey)) return
+
+    setBookmarkPendingIds((current) => new Set(current).add(itemKey))
+    try {
+      const result = await toggleTourBookmark({
+        ...item,
+        contentTypeId,
+        categoryName,
+      })
+      setSaved((current) => {
+        const next = new Set(current)
+        if (result.active) next.add(itemKey)
+        else next.delete(itemKey)
+        return next
+      })
+    } catch (error) {
+      window.alert(error.message || '북마크를 변경하지 못했습니다.')
+    } finally {
+      setBookmarkPendingIds((current) => {
+        const next = new Set(current)
+        next.delete(itemKey)
+        return next
+      })
+    }
   }
 
   return (
@@ -213,10 +308,40 @@ export default function EnjoyCategoryPage({ category }) {
           <div>
             <label>
               <span>지역</span>
-              <select value={regionCode} onChange={(event) => { setRegionCode(event.target.value); setCurrentPage(1) }}>
+              <select value={regionCode} onChange={(event) => {
+                setRegionCode(event.target.value)
+                setDistrictCode('')
+                setDistricts([])
+                setCurrentPage(1)
+              }}>
                 {regions.map((region) => (
                   <option value={region.value} key={region.value || 'all'}>{region.label}</option>
                 ))}
+              </select>
+            </label>
+            <label>
+              <span>시·군·구</span>
+              <select
+                aria-label="시군구 선택"
+                value={districtCode}
+                disabled={!regionCode || isDistrictLoading}
+                onChange={(event) => {
+                  setDistrictCode(event.target.value)
+                  setCurrentPage(1)
+                }}
+              >
+                <option value="">
+                  {!regionCode
+                    ? '시·도 먼저 선택'
+                    : isDistrictLoading
+                      ? '불러오는 중'
+                      : '전체 시·군·구'}
+                </option>
+                {districts.map((district) => {
+                  const code = String(district.lDongSignguCd)
+                  const name = district.name ?? district.lDongSignguNm ?? district.label ?? '지역명 없음'
+                  return <option value={code} key={`${district.lDongRegnCd ?? regionCode}-${code}`}>{name}</option>
+                })}
               </select>
             </label>
             <label>
@@ -262,6 +387,18 @@ export default function EnjoyCategoryPage({ category }) {
                 const itemKey = String(item.contentId)
                 const active = saved.has(itemKey)
                 const cardImage = item.image || item.thumbnail || config.cover
+                /*
+                 * 분류체계 API의 세부 명칭이 응답에 포함되면 그 값을 먼저 사용합니다.
+                 * 아직 백엔드가 분류명을 내려주지 않는 경우에는 현재 페이지의
+                 * 콘텐츠 유형명을 표시하므로 더 이상 'TourAPI'라는 공급자명이 노출되지 않습니다.
+                 */
+                const detailCategoryName =
+                  item.lclsSystm3Nm ??
+                  item.lclsSystm2Nm ??
+                  item.categoryName ??
+                  item.detailCategoryName ??
+                  categoryLabelByCategory[category] ??
+                  config.title
 
                 return (
                   <article key={itemKey}>
@@ -273,7 +410,7 @@ export default function EnjoyCategoryPage({ category }) {
                       />
                       <span className="enjoy-catalog-badge">{config.title}</span>
                       <div>
-                        <small>TourAPI</small>
+                        <small className="enjoy-catalog-detail-category">{detailCategoryName}</small>
                         <h2>{item.title || '이름 정보 없음'}</h2>
                         <address title={item.address || '주소 정보 없음'}>
                           <PlacePinIcon />
@@ -285,11 +422,8 @@ export default function EnjoyCategoryPage({ category }) {
                       className={active ? 'active' : ''}
                       aria-label={`${item.title || config.title} 북마크`}
                       aria-pressed={active}
-                      onClick={() => setSaved((current) => {
-                        const next = new Set(current)
-                        next.has(itemKey) ? next.delete(itemKey) : next.add(itemKey)
-                        return next
-                      })}
+                      disabled={bookmarkPendingIds.has(itemKey)}
+                      onClick={() => toggleBookmark(item, detailCategoryName)}
                     >
                       <svg viewBox="0 0 24 24"><path d="M6 4.75A1.75 1.75 0 0 1 7.75 3h8.5A1.75 1.75 0 0 1 18 4.75V21l-6-3.75L6 21V4.75Z" /></svg>
                     </button>

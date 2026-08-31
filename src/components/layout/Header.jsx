@@ -94,7 +94,7 @@ function Header({ forceLight = false, activePage = '', member = null }) {
             <a className={activePage === 'enjoy' ? 'is-active' : ''} href="/enjoy">여행 즐기기</a>
           </li>
           <li>
-            <a href="/#feed">여행 피드</a>
+            <a className={activePage === 'feed' ? 'is-active' : ''} href="/feed">여행 피드</a>
           </li>
         </ul>
       </nav>

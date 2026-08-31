@@ -15,9 +15,8 @@ export default function Footer() {
         <div>
           <strong>서비스</strong>
           <a href="/destinations">여행지</a>
-          <a href="/destinations/courses">여행 코스</a>
-          {/* 여행 피드 페이지가 생기면 실제 경로로 변경합니다. */}
-          <a href="#feed">여행 피드</a>
+          <span aria-label="여행 코스 페이지 준비 중">여행 코스 준비 중</span>
+          <a href="/feed">여행 피드</a>
         </div>
         <div>
           <strong>고객지원</strong>
