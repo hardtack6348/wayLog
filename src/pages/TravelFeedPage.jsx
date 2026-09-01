@@ -149,7 +149,7 @@ export default function TravelFeedPage() {
       visibility: 'PUBLIC',
       tags: postInput.tags,
       // 로컬 File 객체는 JSON으로 전송할 수 없으므로 업로드 API 구현 전에는 저장하지 않습니다.
-      imageUrls: [],
+      images: postInput.images,
     })
 
     setPosts(current => [normalizePost(createdPost), ...current])

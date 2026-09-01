@@ -63,10 +63,10 @@ export default function FeedPostCreateModal({ author, onClose, onSubmit }) {
       setErrorMessage('여행 이야기를 입력해 주세요.')
       return
     }
-    if (imageFile) {
-      setErrorMessage('사진 업로드 기능은 준비 중입니다. 사진을 삭제한 뒤 먼저 텍스트 기록을 등록해 주세요.')
-      return
-    }
+    // if (imageFile) {
+    //   setErrorMessage('사진 업로드 기능은 준비 중입니다. 사진을 삭제한 뒤 먼저 텍스트 기록을 등록해 주세요.')
+    //   return
+    // }
 
     setIsSubmitting(true)
     setErrorMessage('')
@@ -75,6 +75,7 @@ export default function FeedPostCreateModal({ author, onClose, onSubmit }) {
         content: content.trim(),
         location: location.trim() || '장소 미등록',
         tags,
+        images: imageFile ? [imageFile] : [],
       })
     } catch (error) {
       setErrorMessage(error.message || '여행 기록을 등록하지 못했습니다.')

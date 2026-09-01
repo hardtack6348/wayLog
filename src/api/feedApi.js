@@ -42,12 +42,61 @@ export async function fetchFeedPosts({ page = 1, size = 10 } = {}) {
 }
 
 /** 새 여행 기록을 등록합니다. */
+// export async function createFeedPost(payload) {
+//   const response = await fetch(FEED_API_URL, {
+//     method: 'POST',
+//     headers: createHeaders({ authenticated: true, json: true }),
+//     body: JSON.stringify(payload),
+//   })
+//   return parseResponse(response)
+// }
+
+/**
+ * 게시글 정보와 이미지 파일을 multipart/form-data로 전송합니다.
+ */
 export async function createFeedPost(payload) {
+  const formData = new FormData()
+
+  /*
+   * JSON Blob을 사용해야 Spring의 @RequestPart("post")가
+   * FeedCreateRequest로 정상 변환할 수 있습니다.
+   */
+  formData.append(
+    'post',
+    new Blob(
+      [
+        JSON.stringify({
+          content: payload.content,
+          locationName: payload.locationName,
+          address: payload.address,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+          tourContentId: payload.tourContentId,
+          tourContentTypeId: payload.tourContentTypeId,
+          visibility: payload.visibility,
+          tags: payload.tags,
+        }),
+      ],
+      { type: 'application/json' },
+    ),
+  )
+
+  payload.images.forEach((image) => {
+    formData.append('images', image)
+  })
+
   const response = await fetch(FEED_API_URL, {
     method: 'POST',
-    headers: createHeaders({ authenticated: true, json: true }),
-    body: JSON.stringify(payload),
+
+    /*
+     * FormData 요청에서는 Content-Type을 직접 작성하면 안 됩니다.
+     * 브라우저가 multipart boundary를 포함해 자동 설정합니다.
+     */
+    headers: createHeaders({ authenticated: true }),
+
+    body: formData,
   })
+
   return parseResponse(response)
 }
 
