@@ -40,14 +40,7 @@ export default function RecommendedDestinationSection({
     <div className="destination-grid">
       {destinations.map((item) => (
         <article className="destination-card" key={item.contentId}>
-          {/*
-              TourAPI 상세 조회가 아직 연결되지 않았으므로
-              우선 관광지 목록 페이지로 이동시킵니다.
-
-              detailCommon2 연결이 완료되면 href를 다음처럼 변경할 수 있습니다.
-              href={`/destinations/detail/${item.contentId}`}
-            */}
-          <a href='/destinations/attractions'>
+          <a href={`/destinations/detail/${item.contentId}?contentTypeId=${item.contentTypeId || 12}`}>
             <img src={item.image || item.thumbnail || fallbackImage} alt={item.title} />
             <div className="destination-card__body">
               <h3>{item.title}</h3>

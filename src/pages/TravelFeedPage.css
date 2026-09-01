@@ -51,5 +51,22 @@
 }
 @media(max-width:600px){.travel-feed-layout{width:100%;padding-top:78px}.feed-page-heading,.feed-composer,.feed-post{border-right:0;border-left:0;border-radius:0;box-shadow:none}.feed-page-heading{align-items:flex-start;padding:22px 18px}.feed-page-heading p{max-width:250px}.feed-page-heading>a{display:none}.feed-post__content{padding-left:20px}.feed-post__media{margin-right:0;margin-left:0;border-right:0;border-left:0;border-radius:0}.feed-course-preview,.feed-post__actions{margin-left:20px}.travel-feed-aside{padding:0 14px;grid-template-columns:1fr}.feed-composer footer p{display:none}.feed-course-preview__heading{display:grid}.feed-course-preview__heading button{width:max-content}.feed-course-modal{padding:10px}.feed-course-modal>section{max-height:calc(100vh - 20px)}.feed-course-map{height:220px;margin:0 15px}.feed-course-places{margin-right:15px;margin-left:15px}.feed-course-places small{display:none}}
 
+/* 피드 목록에서 단건 상세 화면으로 이동하는 링크입니다. */
+.feed-post__detail-link {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: #347ce0;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.feed-post__detail-link:hover {
+  background: #eef6ff;
+}
+
 /* 게시물 작성 모달을 여는 간단한 입력 시작 영역 */
 .feed-composer__prompt{box-sizing:border-box;width:100%;min-height:54px;padding:0 16px;border:1px solid #e0e6ed;border-radius:27px;color:#8b98a8;background:#f7f9fc;font:inherit;font-size:13px;text-align:left;cursor:pointer}.feed-composer__prompt:hover{border-color:#bcd1ec;background:#f3f8ff}.feed-composer footer{margin-top:12px}.feed-composer footer>div{display:flex;flex-wrap:wrap;gap:8px 15px}.feed-composer footer span{color:#6e8095;font-size:10px}.feed-composer footer>button{height:36px;padding:0 18px;flex:0 0 auto;border:0;border-radius:18px;color:#fff;background:#377fe3;font:inherit;font-size:12px;font-weight:750;cursor:pointer}

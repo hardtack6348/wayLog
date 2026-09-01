@@ -35,17 +35,31 @@ export default function BookmarkPage() {
     if (!canUseTourBookmark()) return undefined
 
     let isActive = true
-    const group = isDestination ? 'DESTINATION' : 'ENJOY'
 
     async function loadBookmarks() {
       try {
         setIsLoading(true)
         setErrorMessage('')
-        const data = await fetchTourBookmarks(group)
+
+        /*
+         * 탭 개수는 페이지를 처음 열 때부터 정확해야 합니다.
+         * 따라서 활성 탭만 조회하지 않고 여행지·여행 즐기기 목록을 함께 요청합니다.
+         * 이 API는 WayLog DB 조회이므로 TourAPI 호출량에는 영향을 주지 않습니다.
+         */
+        const [destinationData, enjoyData] = await Promise.all([
+          fetchTourBookmarks('DESTINATION'),
+          fetchTourBookmarks('ENJOY'),
+        ])
+
         if (!isActive) return
-        const items = Array.isArray(data.content) ? data.content : []
-        if (group === 'DESTINATION') setDestinationItems(items)
-        else setEnjoyItems(items)
+
+        setDestinationItems(
+          Array.isArray(destinationData.content) ? destinationData.content : [],
+        )
+
+        setEnjoyItems(
+          Array.isArray(enjoyData.content) ? enjoyData.content : [],
+        )
       } catch (error) {
         if (isActive) setErrorMessage(error.message || '북마크를 불러오지 못했습니다.')
       } finally {
@@ -55,7 +69,7 @@ export default function BookmarkPage() {
 
     loadBookmarks()
     return () => { isActive = false }
-  }, [activeTab, isDestination])
+  }, [])
 
   const removeBookmark = async (item) => {
     try {

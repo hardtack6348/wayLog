@@ -253,7 +253,6 @@ export default function DestinationsPage() {
                         <small>{item.address || '주소 정보 없음'}</small>
                       </p>
 
-                      <p>국내의 다양한 관광지를 만나보세요.</p>
                     </div>
                   </article>
                 </a>
@@ -333,7 +332,6 @@ export default function DestinationsPage() {
                           <small>{item.address || '주소 정보 없음'}</small>
                         </p>
 
-                        <p>다양한 문화와 역사를 만나볼 수 있는 공간입니다.</p>
                       </div>
                     </article>
                   </a>

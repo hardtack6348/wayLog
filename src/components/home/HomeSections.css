@@ -122,9 +122,9 @@
  */
 .news-card > div,
 .news-card > a > .news-card__body {
-  padding: 24px 25px 28px;
+  padding: 22px 25px 24px;
 }
-.news-card h3 { margin-top: 18px; }
+.news-card h3 { margin-top: 14px; }
 .news-card p { margin: 12px 0 0; color: #666; font-size: 14px; }
 .notice-section ul { margin: 0; padding: 0; border-top: 2px solid #333; list-style: none; }
 .notice-section li { display: grid; grid-template-columns: 72px 1fr auto; align-items: center; gap: 22px; min-height: 76px; padding: 0 18px; border-bottom: 1px solid #ddd; }

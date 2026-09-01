@@ -22,6 +22,11 @@ import EnjoySearchResultsPage from './pages/EnjoySearchResultsPage'
 import TravelFeedPage from './pages/TravelFeedPage'
 import FeedProfilePage from './pages/FeedProfilePage'
 import BookmarkPage from './pages/BookmarkPage'
+import NoticeListPage from './pages/NoticeListPage'
+import NoticeDetailPage from './pages/NoticeDetailPage'
+import NoticeWritePage from './pages/NoticeWritePage'
+import FeedPostDetailPage from './pages/FeedPostDetailPage'
+import { getAccessToken } from './api/authSession'
 
 /**
  * 홈 API 요청 Promise를 저장합니다.
@@ -36,6 +41,19 @@ function CoursePageRedirect() {
   useEffect(() => {
     window.location.replace('/destinations')
   }, [])
+  return null
+}
+
+/**
+ * 피드는 로그인한 회원만 이용할 수 있는 영역입니다.
+ * 렌더링 중에 바로 이동시키지 않고 effect에서 처리해 안내 문구가 중복되지 않게 합니다.
+ */
+function FeedLoginRequired() {
+  useEffect(() => {
+    window.alert('여행 피드는 로그인 후 이용할 수 있습니다.')
+    window.location.replace('/login')
+  }, [])
+
   return null
 }
 
@@ -281,12 +299,28 @@ function App() {
     return <ForgotPasswordPage />
   }
 
+  if (window.location.pathname === '/notices') {
+    return <NoticeListPage />
+  }
+
+  if (window.location.pathname === '/admin/notices/new') {
+    return <NoticeWritePage />
+  }
+
+  if (window.location.pathname.startsWith('/notices/')) {
+    return <NoticeDetailPage />
+  }
+
   if (window.location.pathname === '/feed/profile') {
     return <FeedProfilePage />
   }
 
+  if (window.location.pathname.startsWith('/feed/posts/')) {
+    return <FeedPostDetailPage />
+  }
+
   if (window.location.pathname === '/feed') {
-    return <TravelFeedPage />
+    return getAccessToken() ? <TravelFeedPage /> : <FeedLoginRequired />
   }
 
   if (window.location.pathname === '/bookmarks') {
@@ -303,7 +337,8 @@ function App() {
 
   if (window.location.pathname.startsWith('/enjoy/')) {
     const [, , category, id] = window.location.pathname.split('/')
-    return id ? <EnjoyDetailPage category={category} id={id} /> : <EnjoyCategoryPage category={category} />
+    // 여행 즐기기 상세도 관광지와 동일한 TourAPI 통합 상세 화면을 사용합니다.
+    return id ? <TravelDetailPage /> : <EnjoyCategoryPage category={category} />
   }
 
   if (window.location.pathname === '/destinations/search') {

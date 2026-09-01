@@ -40,6 +40,7 @@ function normalizePost(post) {
     },
     createdAt: formatCreatedAt(post.createdAt),
     image: post.images?.[0] || null,
+    location: post.location || post.locationName || post.address || '장소 미등록',
     tags: post.tags || [],
     liked: Boolean(post.liked),
     bookmarked: Boolean(post.bookmarked),
@@ -210,9 +211,9 @@ export default function TravelFeedPage() {
                   {post.image && <figure className="feed-post__media"><img src={post.image} alt={`${post.author.nickname}님의 여행 기록`} /><figcaption><PlacePinIcon />{post.location}</figcaption></figure>}
                   {post.course && <CoursePreview course={post.course} onOpen={() => setSelectedCourse(post.course)} />}
                   <footer className="feed-post__actions">
-                    <button type="button" aria-label="댓글"><span>💬</span>{post.commentCount}</button>
                     <button className={post.liked ? 'is-liked' : ''} type="button" onClick={() => handleLike(post.id)}><span>{post.liked ? '❤' : '♡'}</span>{post.likeCount}</button>
                     <button className={post.bookmarked ? 'is-saved' : ''} type="button" onClick={() => handleBookmark(post.id)}><span>{post.bookmarked ? '🌟' : '⭐'}</span>{post.bookmarked ? '저장됨' : '저장'}</button>
+                    <a className="feed-post__detail-link" href={`/feed/posts/${post.id}`}>기록 자세히 보기 →</a>
                   </footer>
                 </article>
               )

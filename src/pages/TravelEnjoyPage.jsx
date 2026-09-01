@@ -30,7 +30,7 @@ function InfoCards({ items, badge, contentTypeId, fallbackImage, columns = 4 }) 
     return <p className="enjoy-api-status">현재 표시할 {badge} 정보가 없습니다.</p>
   }
 
-  return <div className={`enjoy-info-grid${columns === 3 ? ' enjoy-info-grid--three' : ''}`}>{items.map((item) => <a href={`/destinations/detail/${item.contentId}?contentTypeId=${contentTypeId}`} key={item.contentId}><article className="enjoy-info-card"><img src={item.image || item.thumbnail || fallbackImage} alt={item.title || `${badge} 이미지`} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackImage }} /><div><span className="enjoy-info-card__badge">{badge}</span><h3>{item.title || `${badge} 이름 없음`}</h3><p className="enjoy-info-card__location" title={item.address || '주소 정보 없음'}><PlacePinIcon /><span>{item.address || '주소 정보 없음'}</span></p><p>자세한 관광정보를 확인해 보세요.</p></div></article></a>)}</div>
+  return <div className={`enjoy-info-grid${columns === 3 ? ' enjoy-info-grid--three' : ''}`}>{items.map((item) => <a href={`/destinations/detail/${item.contentId}?contentTypeId=${contentTypeId}`} key={item.contentId}><article className="enjoy-info-card"><img src={item.image || item.thumbnail || fallbackImage} alt={item.title || `${badge} 이미지`} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackImage }} /><div><span className="enjoy-info-card__badge">{badge}</span><h3>{item.title || `${badge} 이름 없음`}</h3><p className="enjoy-info-card__location" title={item.address || '주소 정보 없음'}><PlacePinIcon /><span>{item.address || '주소 정보 없음'}</span></p></div></article></a>)}</div>
 }
 
 export default function TravelEnjoyPage() {
@@ -144,7 +144,7 @@ export default function TravelEnjoyPage() {
           <div className="enjoy-news-grid">
             {weeklyNews.map((item) => (
               <a href={`/destinations/detail/${item.contentId}?contentTypeId=15`} key={item.contentId}>
-                <article><img src={item.image || festival} alt={item.title || '축제 이미지'} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = festival }} /><div><h3>{item.title || '축제명 정보 없음'}</h3><p>◷ {item.startDate && item.endDate ? `${item.startDate} ~ ${item.endDate}` : '행사 일정 확인'}</p><p className="location-with-pin"><PlacePinIcon />{item.address || '장소 정보 없음'}</p></div></article>
+                <article><img src={item.image || festival} alt={item.title || '축제 이미지'} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = festival }} /><div><h3>{item.title || '축제명 정보 없음'}</h3>{item.startDate && item.endDate && <p>◷ {item.startDate} ~ {item.endDate}</p>}<p className="location-with-pin"><PlacePinIcon />{item.address || '장소 정보 없음'}</p></div></article>
               </a>
             ))}
           </div>

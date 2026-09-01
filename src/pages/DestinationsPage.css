@@ -39,7 +39,7 @@
 .destination-info-grid--three { grid-template-columns: repeat(3, 1fr); }
 .destination-info-card { overflow: hidden; border-radius: 28px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.18); transition: transform .2s ease; }
 .destination-info-card > img { display: block; width: 100%; height: 230px; object-fit: cover; }
-.destination-info-card > div { min-height: 210px; padding: 22px 24px 26px; }
+.destination-info-card > div { min-height: 0; padding: 22px 24px 24px; }
 .destination-info-card span, .destination-new-grid span { display: inline-block; margin-bottom: 13px; padding: 5px 10px; border: 1px solid #98cae3; border-radius: 5px; color: #3b82f6; background: #dff5ff; font-size: 13px; font-weight: 600; }
 .destination-info-card h3, .destination-new-grid h3 { margin: 0 0 9px; font-size: 22px; }
 .destination-info-card p, .destination-new-grid p { margin: 9px 0 0; color: #777; font-size: 15px; line-height: 1.5; }

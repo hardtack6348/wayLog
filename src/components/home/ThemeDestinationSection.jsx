@@ -27,6 +27,14 @@ const fallbackImages = {
   '숙박': stay,
 }
 
+const contentTypeByCategory = {
+  '축제·행사': 15,
+  '레포츠': 28,
+  '음식점': 39,
+  '쇼핑': 38,
+  '숙박': 32,
+}
+
 /**
  * 상위 HomePage가 조회한 즐길거리 데이터를 props로 받아
  * 선택된 카테고리에 맞게 필터링합니다.
@@ -140,11 +148,7 @@ export default function ThemeDestinationSection({
       <div className="enjoy-grid">
         {filteredItems.map((item) => (
           <article className="enjoy-card" key={item.contentId}>
-            {/*
-              * 상세 API가 완성되면 contentId를 이용해
-              * 상세 화면으로 이동할 수 있습니다.
-            */}
-            <a href={`/destinations/detail/${item.contentId}`}>
+            <a href={`/destinations/detail/${item.contentId}?contentTypeId=${item.contentTypeId || contentTypeByCategory[item.category]}`}>
               <img src={item.image || fallbackImages[item.category] || stay} alt={item.title} />
               <div>
                 <h3>{item.title}</h3>

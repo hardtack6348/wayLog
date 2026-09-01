@@ -39,8 +39,7 @@ function formatFestivalDate(date) {
  * 시작일만 있으면:
  * 2026.08.27
  *
- * 날짜가 모두 없으면:
- * 행사 일정 확인
+ * 날짜가 모두 없으면: null (일정 행을 표시하지 않음)
  */
 
 function makeFestivalPeriod(startDate, endDate) {
@@ -58,11 +57,7 @@ function makeFestivalPeriod(startDate, endDate) {
   if (formattedEndDate) {
     return formattedEndDate
   }
-   /*
-   * 현재 백엔드는 startDate와 endDate를 null로 반환하므로
-   * 날짜 API를 추가하기 전까지 이 문구가 표시됩니다.
-   */
-  return '행사 일정 확인'
+  return null
 }
 
 /**
@@ -132,11 +127,9 @@ export default function WeeklyNewsSection({
                   <div className="news-card__body">
                     <span className="news-card__badge">행사</span>
                     <h3>{festival.title || ' 축제명 정보 없음'}</h3>
-                    <p>◷{' '}
-                      {makeFestivalPeriod(
-                        festival.startDate,
-                        festival.endDate,
-                      )}</p>
+                    {makeFestivalPeriod(festival.startDate, festival.endDate) && (
+                      <p>◷ {makeFestivalPeriod(festival.startDate, festival.endDate)}</p>
+                    )}
                     <p className="location-with-pin">
                       <PlacePinIcon />
                       {festival.address || '장소 정보가 없습니다.'}

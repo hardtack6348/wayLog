@@ -136,3 +136,14 @@ export async function updateFeedHandle(feedHandle) {
   })
   return parseResponse(response)
 }
+
+/**
+ * 여행 피드 게시글 한 건을 조회합니다.
+ * 로그인 상태라면 liked, bookmarked 상태도 함께 받습니다.
+ */
+export async function fetchFeedPost(postId) {
+  const response = await fetch(`${FEED_API_URL}/${postId}`, {
+    headers: createHeaders(),
+  })
+  return parseResponse(response)
+}

@@ -47,12 +47,14 @@ function HeroSection() {
 
           {/* 자주 찾는 여행 테마로 바로 이동하는 빠른 탐색 메뉴입니다. */}
           <div className="hero-section__quick-links" aria-label="빠른 여행 테마">
-            {/* 현재 실제로 구현된 페이지 범위 안에서만 이동하도록 링크를 구성했습니다. */}
-            <a href="/destinations"><PlacePinIcon />추천 여행지</a>
+            {/* 각 빠른 탐색 버튼은 구현된 목록·검색 결과 화면으로 바로 이동합니다. */}
+            <a href="/destinations/attractions"><PlacePinIcon />추천 여행지</a>
             <a href="/enjoy">🏞 여행 즐기기</a>
-            <a href="/destinations">⛱ 바다 여행</a>  
-            <a href="/destinations">🏘 가족 여행</a>
-            <a href="/enjoy">🏕 감성 숙소</a>
+            {/* 자연관광(NA) 목록에서 바다 여행에 어울리는 관광지를 탐색합니다. */}
+            <a href="/destinations/search?contentTypeId=12&type=관광지&lclsSystm1=NA&classificationName=바다%20여행">⛱ 바다 여행</a>
+            {/* 체험관광(EX) 목록은 가족 단위로 함께 둘러보기 좋은 관광지를 우선 보여 줍니다. */}
+            <a href="/destinations/search?contentTypeId=12&type=관광지&lclsSystm1=EX&classificationName=가족%20여행">🏘 가족 여행</a>
+            <a href="/enjoy/stay">🏕 감성 숙소</a>
           </div>
         </div>
       </div>
