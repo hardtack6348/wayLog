@@ -50,8 +50,17 @@ function CoursePageRedirect() {
  */
 function FeedLoginRequired() {
   useEffect(() => {
-    window.alert('여행 피드는 로그인 후 이용할 수 있습니다.')
-    window.location.replace('/login')
+    /*
+     * 개발 환경의 React StrictMode는 effect를 한 번 실행·정리한 뒤
+     * 다시 실행해 부작용을 검사합니다. 안내와 이동을 다음 작업으로 미루면
+     * 첫 번째 검사 실행은 cleanup에서 취소되어 알림이 한 번만 표시됩니다.
+     */
+    const redirectTimer = window.setTimeout(() => {
+      window.alert('여행 피드는 로그인 후 이용할 수 있습니다.')
+      window.location.replace('/login')
+    }, 0)
+
+    return () => window.clearTimeout(redirectTimer)
   }, [])
 
   return null

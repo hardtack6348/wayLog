@@ -7,6 +7,7 @@ import { getStoredMember } from '../api/authSession'
 import {
   createFeedPost,
   fetchFeedPosts,
+  fetchMyFeedProfile,
   toggleFeedBookmark,
   toggleFeedLike,
 } from '../api/feedApi'
@@ -29,12 +30,15 @@ function formatCreatedAt(value) {
 function normalizePost(post) {
   const nickname = post.author?.nickname || '여행자'
   const authorId = Number(post.author?.id || 0)
+  // 백엔드가 전달한 피드 핸들을 우선 사용합니다.
+  // 기존 임시 값(@waylog_{회원번호})은 피드 프로필을 수정한 뒤에도 바뀌지 않는 원인이었습니다.
+  const rawHandle = String(post.author?.feedHandle || post.author?.handle || '').replace(/^@+/, '')
   return {
     ...post,
     author: {
       ...post.author,
       nickname,
-      handle: `@waylog_${post.author?.id || 'traveler'}`,
+      handle: rawHandle ? `@${rawHandle}` : `@waylog_${post.author?.id || 'traveler'}`,
       initial: nickname.slice(0, 1),
       color: avatarColors[Math.abs(authorId) % avatarColors.length],
     },
@@ -100,7 +104,14 @@ function CourseModal({ course, onClose }) {
 
 export default function TravelFeedPage() {
   const member = getStoredMember()
-  const currentAuthor = { nickname: member?.nickname || '여행자', initial: (member?.nickname || '여').slice(0, 1), color: '#3b82f6' }
+  const memberId = member?.memberId
+  const [myFeedHandle, setMyFeedHandle] = useState('')
+  const currentAuthor = {
+    nickname: member?.nickname || '여행자',
+    handle: myFeedHandle ? `@${myFeedHandle}` : '',
+    initial: (member?.nickname || '여').slice(0, 1),
+    color: '#3b82f6',
+  }
   const [posts, setPosts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -126,6 +137,29 @@ export default function TravelFeedPage() {
     loadPosts()
     return () => { active = false }
   }, [])
+
+  useEffect(() => {
+    let active = true
+
+    async function loadMyFeedHandle() {
+      if (!memberId) {
+        setMyFeedHandle('')
+        return
+      }
+
+      try {
+        // 피드 메인 진입 때 최신 프로필을 다시 읽어 /feed/profile의 변경값을 반영합니다.
+        const profile = await fetchMyFeedProfile({ page: 1, size: 1 })
+        if (active) setMyFeedHandle(String(profile.feedHandle || '').replace(/^@+/, ''))
+      } catch {
+        // 프로필 영역의 보조 정보이므로 피드 목록 조회를 실패 처리하지 않습니다.
+        if (active) setMyFeedHandle('')
+      }
+    }
+
+    loadMyFeedHandle()
+    return () => { active = false }
+  }, [memberId])
 
   const requireLogin = () => {
     if (member) return true
@@ -204,9 +238,13 @@ export default function TravelFeedPage() {
             {!isLoading && errorMessage && <div className="feed-timeline__status feed-timeline__status--error"><p>{errorMessage}</p><button type="button" onClick={() => window.location.reload()}>다시 시도</button></div>}
             {!isLoading && !errorMessage && posts.length === 0 && <div className="feed-timeline__status"><strong>아직 등록된 여행 기록이 없습니다.</strong><p>첫 번째 여행 이야기를 남겨보세요.</p></div>}
             {posts.map(post => {
+              // 기존 게시글 응답에 feedHandle이 없더라도, 로그인한 본인의 글은
+              // 방금 조회한 최신 프로필 핸들로 표시합니다.
+              const isMyPost = memberId && Number(post.author?.id) === Number(memberId)
+              const postHandle = isMyPost && myFeedHandle ? `@${myFeedHandle}` : post.author.handle
               return (
                 <article className="feed-post" key={post.id}>
-                  <header><Avatar author={post.author} /><div><strong>{post.author.nickname}</strong><span>{post.author.handle} · {post.createdAt}</span></div>{post.course && <em>코스가 있는 기록</em>}</header>
+                  <header><Avatar author={post.author} /><div><strong>{post.author.nickname}</strong><span>{postHandle} · {post.createdAt}</span></div>{post.course && <em>코스가 있는 기록</em>}</header>
                   <div className="feed-post__content"><p>{post.content}</p>{post.tags.length > 0 && <div className="feed-post__tags">{post.tags.map(tag => <span key={tag}>#{tag}</span>)}</div>}</div>
                   {post.image && <figure className="feed-post__media"><img src={post.image} alt={`${post.author.nickname}님의 여행 기록`} /><figcaption><PlacePinIcon />{post.location}</figcaption></figure>}
                   {post.course && <CoursePreview course={post.course} onOpen={() => setSelectedCourse(post.course)} />}
@@ -222,7 +260,7 @@ export default function TravelFeedPage() {
         </section>
 
         <aside className="travel-feed-aside">
-          <section className="feed-profile-card"><div className="feed-profile-card__cover" /><Avatar author={currentAuthor} large /><h2>{member?.nickname || '여행자님'}</h2><p>{member ? '나만의 여행을 기록하고 코스로 공유해 보세요.' : '로그인하면 여행 기록을 남기고 저장할 수 있어요.'}</p><a href={member ? '/feed/profile' : '/login'}>{member ? '내 SNS 프로필' : '로그인하기'}</a></section>
+          <section className="feed-profile-card"><div className="feed-profile-card__cover" /><Avatar author={currentAuthor} large /><h2>{member?.nickname || '여행자님'}</h2>{member && myFeedHandle && <strong className="feed-profile-card__handle">@{myFeedHandle}</strong>}<p>{member ? '나만의 여행을 기록하고 코스로 공유해 보세요.' : '로그인하면 여행 기록을 남기고 저장할 수 있어요.'}</p><a href={member ? '/feed/profile' : '/login'}>{member ? '내 SNS 프로필' : '로그인하기'}</a></section>
           <section className="feed-guide-card"><span>WAYLOG FEED</span><h2>여행의 순간을<br />기록하고 나눠 보세요</h2><ol><li><b>1</b>다른 여행자의 새로운 기록 둘러보기</li><li><b>2</b>사진과 장소를 담아 여행 기록 작성하기</li><li><b>3</b>마음에 드는 기록에 좋아요·저장하기</li></ol></section>
           <section className="feed-notice-card"><strong>여행 기록 작성 팁</strong><p>장소와 해시태그를 함께 남기면 다른 여행자가 원하는 여행 정보를 더 쉽게 발견할 수 있어요.</p></section>
         </aside>

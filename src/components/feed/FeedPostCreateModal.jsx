@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import './FeedPostCreateModal.css'
 
+const MAX_IMAGE_COUNT = 5
+
 export default function FeedPostCreateModal({ author, onClose, onSubmit }) {
   const fileInputRef = useRef(null)
+  const previewUrlsRef = useRef([])
   const [content, setContent] = useState('')
   const [location, setLocation] = useState('')
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState('')
+  const [imageFiles, setImageFiles] = useState([])
+  const [imagePreviews, setImagePreviews] = useState([])
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
@@ -22,24 +25,51 @@ export default function FeedPostCreateModal({ author, onClose, onSubmit }) {
     }
   }, [onClose])
 
-  const selectImage = event => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) {
+  useEffect(() => () => {
+    // 모달이 완전히 닫힐 때 생성한 모든 미리보기 URL을 정리합니다.
+    previewUrlsRef.current.forEach(URL.revokeObjectURL)
+  }, [])
+
+  const selectImages = event => {
+    const selectedFiles = Array.from(event.target.files || [])
+    if (selectedFiles.length === 0) return
+
+    if (selectedFiles.some(file => !file.type.startsWith('image/'))) {
       setErrorMessage('이미지 파일만 선택할 수 있습니다.')
+      event.target.value = ''
       return
     }
-    if (imagePreview) URL.revokeObjectURL(imagePreview)
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
-    setErrorMessage('')
+
+    const remainingCount = MAX_IMAGE_COUNT - imageFiles.length
+    if (remainingCount <= 0) {
+      setErrorMessage(`사진은 최대 ${MAX_IMAGE_COUNT}장까지 등록할 수 있습니다.`)
+      event.target.value = ''
+      return
+    }
+
+    const filesToAdd = selectedFiles.slice(0, remainingCount)
+    const previewsToAdd = filesToAdd.map(file => URL.createObjectURL(file))
+
+    previewUrlsRef.current.push(...previewsToAdd)
+    setImageFiles(current => [...current, ...filesToAdd])
+    setImagePreviews(current => [...current, ...previewsToAdd])
+    setErrorMessage(selectedFiles.length > remainingCount
+      ? `사진은 최대 ${MAX_IMAGE_COUNT}장까지 등록할 수 있습니다.`
+      : '')
+
+    // 같은 파일을 삭제한 뒤 다시 선택할 수 있도록 input을 비웁니다.
+    event.target.value = ''
   }
 
-  const removeImage = () => {
-    if (imagePreview) URL.revokeObjectURL(imagePreview)
-    setImageFile(null)
-    setImagePreview('')
-    if (fileInputRef.current) fileInputRef.current.value = ''
+  const removeImage = index => {
+    const previewToRemove = imagePreviews[index]
+    if (previewToRemove) {
+      URL.revokeObjectURL(previewToRemove)
+      previewUrlsRef.current = previewUrlsRef.current.filter(url => url !== previewToRemove)
+    }
+    setImageFiles(current => current.filter((_, currentIndex) => currentIndex !== index))
+    setImagePreviews(current => current.filter((_, currentIndex) => currentIndex !== index))
+    setErrorMessage('')
   }
 
   const addTag = () => {
@@ -75,7 +105,7 @@ export default function FeedPostCreateModal({ author, onClose, onSubmit }) {
         content: content.trim(),
         location: location.trim() || '장소 미등록',
         tags,
-        images: imageFile ? [imageFile] : [],
+        images: imageFiles,
       })
     } catch (error) {
       setErrorMessage(error.message || '여행 기록을 등록하지 못했습니다.')
@@ -101,11 +131,24 @@ export default function FeedPostCreateModal({ author, onClose, onSubmit }) {
               <small>{content.length}/1000</small>
             </label>
 
-            <input ref={fileInputRef} className="feed-create-file" type="file" accept="image/*" onChange={selectImage} />
-            {imagePreview ? (
-              <div className="feed-create-image"><img src={imagePreview} alt="선택한 여행 사진 미리보기" /><button type="button" onClick={removeImage}>사진 삭제</button></div>
-            ) : (
-              <button className="feed-create-image-button" type="button" onClick={() => fileInputRef.current?.click()}><span>＋</span><strong>여행 사진 추가</strong><small>대표 사진 한 장을 선택해 주세요.</small></button>
+            <input ref={fileInputRef} className="feed-create-file" type="file" accept="image/*" multiple onChange={selectImages} />
+            {imagePreviews.length > 0 && (
+              <div className="feed-create-image-grid" aria-label={`선택한 여행 사진 ${imagePreviews.length}장`}>
+                {imagePreviews.map((preview, index) => (
+                  <figure className="feed-create-image" key={preview}>
+                    <img src={preview} alt={`선택한 여행 사진 ${index + 1}`} />
+                    <button type="button" aria-label={`사진 ${index + 1} 삭제`} onClick={() => removeImage(index)}>×</button>
+                  </figure>
+                ))}
+                {imagePreviews.length < MAX_IMAGE_COUNT && (
+                  <button className="feed-create-image-more" type="button" onClick={() => fileInputRef.current?.click()}>
+                    <span>＋</span><small>{imagePreviews.length}/{MAX_IMAGE_COUNT}</small>
+                  </button>
+                )}
+              </div>
+            )}
+            {imagePreviews.length === 0 && (
+              <button className="feed-create-image-button" type="button" onClick={() => fileInputRef.current?.click()}><span>＋</span><strong>여행 사진 추가</strong><small>최대 {MAX_IMAGE_COUNT}장까지 선택할 수 있습니다.</small></button>
             )}
           </section>
 
