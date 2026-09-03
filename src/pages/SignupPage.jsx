@@ -198,8 +198,6 @@ export default function SignupPage() {
         verificationCode: '', // 인증번호 입력 필드 초기화
       }))
       window.alert('인증번호를 발송했습니다.')
-       window.alert("emailChecked : " + emailChecked)
-      window.alert("emailVerified : " + emailVerified)
     } catch (error) {
       window.alert(error.message || '인증번호 발송 중 문제가 발생했습니다.')
     }
