@@ -128,7 +128,12 @@ export default function SignupPage() {
      
       const data = await response.json()
      
-      if (data.email!==null) {
+       /*
+        * available=false이면 이미 가입된 이메일입니다.
+        * available=true이면 사용할 수 있는 이메일입니다.
+        */
+      if (!data.available) {
+        setEmailChecked(false)
         window.alert('이미 사용 중인 이메일입니다.')
         return
       }
