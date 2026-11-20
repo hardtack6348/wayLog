@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { getMember, logout } from '../../api/client'
 import logo from '../../assets/figma/logo.png'
 import './Header.css'
 
@@ -10,13 +11,7 @@ import './Header.css'
 function Header({ forceLight = false, activePage = '', member = null }) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
-  const [sessionMember, setSessionMember] = useState(() => {
-    try {
-      return JSON.parse(window.sessionStorage.getItem('waylogMember'))
-    } catch {
-      return null
-    }
-  })
+  const [sessionMember, setSessionMember] = useState(getMember)
   const memberMenuRef = useRef(null)
   const currentMember = member ?? sessionMember
 
@@ -49,9 +44,9 @@ function Header({ forceLight = false, activePage = '', member = null }) {
     }
   }, [isMemberMenuOpen])
 
-  const handleLogout = () => {
-    // 백엔드 연결 시 로그아웃 API 호출 후 동일하게 회원 상태를 비웁니다.
-    window.sessionStorage.removeItem('waylogMember')
+  const handleLogout = async () => {
+    // 서버에서 Refresh Token 쿠키를 지우고, 메모리의 Access Token과 회원 정보도 비웁니다.
+    await logout()
     setSessionMember(null)
     setIsMemberMenuOpen(false)
     window.location.href = '/'

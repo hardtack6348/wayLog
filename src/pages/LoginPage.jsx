@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { saveMember, setAccessToken } from '../api/client'
 import logo from '../assets/figma/logo.png'
 import loginBackground from '../assets/auth/login-background.png'
 import mailIcon from '../assets/auth/mail.svg'
@@ -47,12 +48,6 @@ export default function LoginPage() {
     },
   }
 
-  const authStore = {
-    setMember: member => {
-      sessionStorage.setItem('member', JSON.stringify(member))
-    },
-  }
-
   const handleSubmit =  async event => {
     event.preventDefault()
      setIsLoading(true)
@@ -63,11 +58,14 @@ export default function LoginPage() {
 
 
        if (!response.accessToken ) {
-        console.log(response);
         throw new Error('응답에 회원 정보가 없습니다.')
        }
-       
-       authStore.setMember(response.member)
+
+       // Access Token은 메모리에, 헤더 표시용 회원 정보는 sessionStorage(waylogMember)에 저장합니다.
+       // 아래에서 페이지를 이동하면 메모리의 토큰은 사라지지만, 다음 API 요청에서 401을 받으면
+       // Refresh Token 쿠키로 자동 재발급됩니다(src/api/client.js).
+       setAccessToken(response.accessToken)
+       saveMember(response.member)
 
        window.location.href = '/'
 
