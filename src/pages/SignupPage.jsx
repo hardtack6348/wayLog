@@ -121,14 +121,15 @@ export default function SignupPage() {
      const response = await fetch(
         `/api/v1/users/check-email?email=${encodeURIComponent(form.email)}`
       )
-     
+
       if (!response.ok) {
         throw new Error('이메일 중복확인에 실패했습니다.')
       }
-     
+
+      // 서버는 { available: true | false }를 반환합니다. false면 이미 가입된 이메일입니다.
       const data = await response.json()
-     
-      if (data.email!==null) {
+
+      if (!data.available) {
         window.alert('이미 사용 중인 이메일입니다.')
         return
       }
@@ -170,7 +171,6 @@ export default function SignupPage() {
          }),
        }
      )
-     console.log(response);
      if (!response.ok) {
        throw new Error('인증번호 발송에 실패했습니다.')
      }
@@ -193,8 +193,6 @@ export default function SignupPage() {
         verificationCode: '', // 인증번호 입력 필드 초기화
       }))
       window.alert('인증번호를 발송했습니다.')
-       window.alert("emailChecked : " + emailChecked)
-      window.alert("emailVerified : " + emailVerified)
     } catch (error) {
       window.alert(error.message || '인증번호 발송 중 문제가 발생했습니다.')
     }
@@ -239,6 +237,7 @@ export default function SignupPage() {
          headers: {
            'Content-Type': 'application/json',
          },
+         credentials: 'include',
          body: JSON.stringify({
            email: form.email,
            authCode: form.verificationCode,
@@ -247,10 +246,11 @@ export default function SignupPage() {
        }
      )
      const data1 = await response.json().catch(()=>({}))
-    //  console.log("이메일 인증 응답 : ",JSON.stringify(data1, null, 2))
-    
+
      if (!response.ok) {
-       throw new Error('인증번호가 올바르지 않거나 만료되었습니다.')
+       // 서버가 틀림(남은 횟수 포함), 만료, 5회 초과 등의 안내를 message로 보냅니다.
+       const remaining = data1.remainingAttempts !== undefined ? ` (남은 횟수 ${data1.remainingAttempts}회)` : ''
+       throw new Error((data1.message || '인증번호가 올바르지 않거나 만료되었습니다.') + remaining)
      }
 
     //  if (data1.verified !== true){
@@ -262,7 +262,6 @@ export default function SignupPage() {
   
 
       setEmailVerified(true) // 인증번호 확인 완료 상태 설정
-      console.log("emailVerified : "+emailVerified)
       setVerificationSecondsLeft(0) // 인증번호 남은 시간 초기화
       window.alert('이메일 인증이 완료되었습니다.')
     } catch (error) {
@@ -273,14 +272,34 @@ export default function SignupPage() {
     }
   }
 
-  const checkNickname = () => {
+  const checkNickname = async () => {
     if (form.nickname.trim().length < 2) {
       window.alert('닉네임은 2자 이상 입력해 주세요.')
       return
     }
 
-    // check-nickname 응답의 available 값이 true일 때만 nicknameChecked를 true로 설정합니다.
-    setNicknameChecked(true)
+    try {
+      const response = await fetch(
+        `/api/v1/users/check-nickname?nickname=${encodeURIComponent(form.nickname.trim())}`
+      )
+      if (!response.ok) {
+        throw new Error('닉네임 중복확인에 실패했습니다.')
+      }
+
+      // check-nickname 응답의 available 값이 true일 때만 nicknameChecked를 true로 설정합니다.
+      const data = await response.json()
+      if (!data.available) {
+        setNicknameChecked(false)
+        window.alert('이미 사용 중인 닉네임입니다.')
+        return
+      }
+
+      setNicknameChecked(true)
+      window.alert('사용 가능한 닉네임입니다.')
+    } catch (error) {
+      setNicknameChecked(false)
+      window.alert(error.message || '닉네임 중복확인 중 문제가 발생했습니다.')
+    }
   }
 
   const moveToTerms = event => {
@@ -349,18 +368,33 @@ export default function SignupPage() {
     },
   }
 
-  const response = await fetch('/api/v1/auth/signup', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  })
+  try {
+    const response = await fetch('/api/v1/auth/signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(requestBody),
+    })
 
-  if (!response.ok) {
-    throw new Error('회원가입에 실패했습니다.')
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      // 403: 이메일 인증이 없거나 10분이 지남, 409: 이메일·닉네임 중복
+      if (response.status === 403) {
+        setEmailVerified(false)
+        setStep(1)
+      }
+      if (response.status === 409) {
+        setStep(1)
+      }
+      throw new Error(data.message || '회원가입에 실패했습니다.')
+    }
+  } catch (error) {
+    window.alert(error.message || '회원가입 중 문제가 발생했습니다.')
+    return
   }
-     
+
     window.alert('회원가입이 완료되었습니다. 로그인해 주세요.')
     window.location.href = '/login'
   }
